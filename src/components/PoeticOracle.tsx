@@ -24,21 +24,31 @@ const oracleResponses = {
   ]
 };
 
-export const PoeticOracle = ({ currentState, pulseIntensity }) => {
+interface PoeticOracleProps {
+  currentState: string;
+  pulseIntensity: number;
+  mousePos: { x: number; y: number };
+}
+
+export const PoeticOracle = ({ currentState, pulseIntensity, mousePos }: PoeticOracleProps) => {
   const [isActive, setIsActive] = useState(false);
   const [currentResponse, setCurrentResponse] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
   const consultOracle = () => {
-    const responses = oracleResponses[currentState] || oracleResponses.deseo;
+    const responses = oracleResponses[currentState as keyof typeof oracleResponses] || oracleResponses.deseo;
     const response = responses[Math.floor(Math.random() * responses.length)];
     
     setIsActive(true);
     setIsTyping(true);
     setCurrentResponse('');
     
-    // Efecto de escritura
+    // Efecto de escritura con variación según posición del cursor
     let i = 0;
+    const baseSpeed = 50;
+    const cursorInfluence = Math.sqrt(mousePos.x * mousePos.y) / 100;
+    const typeSpeed = baseSpeed + cursorInfluence * 30;
+    
     const typeInterval = setInterval(() => {
       setCurrentResponse(response.substring(0, i));
       i++;
@@ -46,7 +56,7 @@ export const PoeticOracle = ({ currentState, pulseIntensity }) => {
         clearInterval(typeInterval);
         setIsTyping(false);
       }
-    }, 50);
+    }, typeSpeed);
   };
 
   return (
@@ -61,6 +71,7 @@ export const PoeticOracle = ({ currentState, pulseIntensity }) => {
         `}
         style={{
           boxShadow: `0 0 ${pulseIntensity * 20}px rgba(168, 85, 247, 0.4)`,
+          transform: `scale(${1 + Math.sin(mousePos.x * 0.01) * 0.02})`
         }}
       >
         <span className="font-mono text-sm">oráculo glitch-amoroso</span>
@@ -70,7 +81,13 @@ export const PoeticOracle = ({ currentState, pulseIntensity }) => {
       </button>
       
       {isActive && currentResponse && (
-        <div className="absolute bottom-full left-0 mb-4 w-96 p-4 bg-black bg-opacity-95 border border-purple-400 rounded-lg backdrop-blur-sm">
+        <div 
+          className="absolute bottom-full left-0 mb-4 w-96 p-4 bg-black bg-opacity-95 border border-purple-400 rounded-lg backdrop-blur-sm"
+          style={{
+            transform: `translateY(${Math.sin(mousePos.y * 0.01) * 5}px)`,
+            opacity: 0.9 + Math.sin(pulseIntensity * 3) * 0.1
+          }}
+        >
           <div className="text-purple-200 text-sm leading-relaxed">
             {currentResponse}
             {isTyping && <span className="animate-pulse">|</span>}
