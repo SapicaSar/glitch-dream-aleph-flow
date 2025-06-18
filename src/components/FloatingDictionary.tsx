@@ -24,11 +24,11 @@ const poeticGlossary = {
   }
 };
 
-export const FloatingDictionary = ({ currentState }) => {
+export const FloatingDictionary = ({ currentState }: { currentState: string }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedWord, setSelectedWord] = useState(null);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   
-  const currentGlossary = poeticGlossary[currentState] || {};
+  const currentGlossary = poeticGlossary[currentState as keyof typeof poeticGlossary] || {};
 
   return (
     <div className="fixed top-4 right-4 z-30">
@@ -55,7 +55,7 @@ export const FloatingDictionary = ({ currentState }) => {
                 <div className="text-cyan-400 font-mono text-sm">{word}</div>
                 {selectedWord === word && (
                   <div className="text-white text-xs mt-1 opacity-90 leading-relaxed">
-                    {definition}
+                    {definition as string}
                   </div>
                 )}
               </div>

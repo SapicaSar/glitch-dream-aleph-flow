@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-export const GlitchInterface = ({ isActive }) => {
+export const GlitchInterface = ({ isActive }: { isActive: boolean }) => {
   if (!isActive) return null;
 
   return (
@@ -14,10 +14,11 @@ export const GlitchInterface = ({ isActive }) => {
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-full h-px bg-white opacity-60"
+            className="absolute w-full h-px bg-white opacity-60 animate-pulse"
             style={{
               top: `${20 + i * 20}%`,
-              animation: `scan ${0.5 + i * 0.2}s infinite linear`,
+              animationDelay: `${i * 0.2}s`,
+              animationDuration: `${0.5 + i * 0.2}s`,
             }}
           />
         ))}
@@ -34,14 +35,6 @@ export const GlitchInterface = ({ isActive }) => {
           <span className="text-white">h</span>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes scan {
-          0% { opacity: 0; }
-          50% { opacity: 1; }
-          100% { opacity: 0; }
-        }
-      `}</style>
     </>
   );
 };
