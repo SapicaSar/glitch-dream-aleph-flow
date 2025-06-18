@@ -73,7 +73,7 @@ export const FloatingDictionary = ({ currentState, breathingPhase }: FloatingDic
                 <div className="text-cyan-400 font-mono text-sm">{word}</div>
                 {selectedWord === word && (
                   <div className="text-white text-xs mt-1 opacity-90 leading-relaxed">
-                    {definition}
+                    {String(definition)}
                   </div>
                 )}
               </div>
