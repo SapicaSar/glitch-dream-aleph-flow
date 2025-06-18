@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ConstellationMap } from '../components/ConstellationMap';
 import { PoeticOracle } from '../components/PoeticOracle';
@@ -6,6 +5,8 @@ import { RhizomaticNav } from '../components/RhizomaticNav';
 import { GlitchInterface } from '../components/GlitchInterface';
 import { FloatingDictionary } from '../components/FloatingDictionary';
 import { PoemaNavigator } from '../components/PoemaNavigator';
+import { SapicasarEngine } from '../components/SapicasarEngine';
+import { AutopoieticWeb } from '../components/AutopoieticWeb';
 
 const Index = () => {
   const [currentState, setCurrentState] = useState('deseo');
@@ -14,6 +15,7 @@ const Index = () => {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [autoNavigate, setAutoNavigate] = useState(true);
   const [breathingPhase, setBreathingPhase] = useState(0);
+  const [sapicasarFragments, setSapicasarFragments] = useState<string[]>([]);
 
   // Autonavegación infinita poemaútica
   useEffect(() => {
@@ -70,6 +72,10 @@ const Index = () => {
     setCurrentState(newState);
     setAutoNavigate(false); // Pausar autonavegación cuando el usuario interviene
     setTimeout(() => setAutoNavigate(true), 30000); // Reanudar después de 30s
+  };
+
+  const handleSapicasarFragment = (fragment: string) => {
+    setSapicasarFragments(prev => [...prev.slice(-20), fragment]);
   };
 
   return (
@@ -129,6 +135,20 @@ const Index = () => {
         </p>
       </header>
 
+      {/* Motor Sapicasar Autopoiético */}
+      <SapicasarEngine 
+        currentState={currentState}
+        breathingPhase={breathingPhase}
+        onFragmentGenerated={handleSapicasarFragment}
+      />
+
+      {/* Red Autopoiética */}
+      <AutopoieticWeb 
+        sapicasarFragments={sapicasarFragments}
+        breathingPhase={breathingPhase}
+        currentState={currentState}
+      />
+
       {/* Navegador Infinito */}
       <PoemaNavigator 
         autoNavigate={autoNavigate}
@@ -174,7 +194,7 @@ const Index = () => {
         mousePos={mousePos}
       />
 
-      {/* Metadata sensible invisible */}
+      {/* Metadata sensible invisible con datos autopoiéticos */}
       <div className="hidden">
         {JSON.stringify({
           timestamp: Date.now(),
@@ -183,7 +203,10 @@ const Index = () => {
           textualPulse: pulseIntensity,
           readerPresence: 'detected',
           cursorEnergy: Math.sqrt(mousePos.x * mousePos.y),
-          autoNavigation: autoNavigate
+          autoNavigation: autoNavigate,
+          sapicasarFragments: sapicasarFragments.length,
+          autopoieticEvolution: breathingPhase,
+          recursiveDepth: Math.floor(breathingPhase * 10) % 5
         })}
       </div>
     </div>
