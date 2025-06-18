@@ -1,7 +1,29 @@
 
 import React from 'react';
 
-export const ConnectionWeb = ({ fragments, positions, activeNode, pulseIntensity }) => {
+interface Fragment {
+  id: number;
+  text: string;
+  connections: number[];
+}
+
+interface ConnectionWebProps {
+  fragments: Fragment[];
+  positions: Record<number, { x: number; y: number }>;
+  activeNode: number | null;
+  pulseIntensity: number;
+  hoveredNode: number | null;
+  breathingPhase: number;
+}
+
+export const ConnectionWeb = ({ 
+  fragments, 
+  positions, 
+  activeNode, 
+  pulseIntensity, 
+  hoveredNode, 
+  breathingPhase 
+}: ConnectionWebProps) => {
   const renderConnections = () => {
     const lines = [];
     
@@ -15,6 +37,8 @@ export const ConnectionWeb = ({ fragments, positions, activeNode, pulseIntensity
         
         if (toPos && toFragment) {
           const isHighlighted = activeNode === fragment.id || activeNode === connectionId;
+          const isHovered = hoveredNode === fragment.id || hoveredNode === connectionId;
+          const intensity = isHighlighted ? 1 : isHovered ? 0.7 : 0.3;
           
           lines.push(
             <line
@@ -23,12 +47,14 @@ export const ConnectionWeb = ({ fragments, positions, activeNode, pulseIntensity
               y1={`${fromPos.y}%`}
               x2={`${toPos.x}%`}
               y2={`${toPos.y}%`}
-              stroke={isHighlighted ? '#ec4899' : '#ffffff40'}
-              strokeWidth={isHighlighted ? 2 : 1}
-              strokeDasharray={isHighlighted ? '5,3' : '2,4'}
+              stroke={isHighlighted ? '#ec4899' : isHovered ? '#06b6d4' : '#ffffff40'}
+              strokeWidth={isHighlighted ? 3 : isHovered ? 2 : 1}
+              strokeDasharray={isHighlighted ? '8,4' : isHovered ? '5,3' : '2,4'}
               className="transition-all duration-500"
               style={{
-                opacity: isHighlighted ? pulseIntensity : 0.3,
+                opacity: intensity * pulseIntensity,
+                filter: `drop-shadow(0 0 ${intensity * 5}px currentColor)`,
+                strokeDashoffset: Math.sin(breathingPhase) * 10,
               }}
             />
           );
@@ -42,15 +68,22 @@ export const ConnectionWeb = ({ fragments, positions, activeNode, pulseIntensity
   return (
     <svg className="absolute inset-0 w-full h-full pointer-events-none">
       <defs>
-        <filter id="glow">
+        <filter id="connectionGlow">
           <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
           <feMerge> 
             <feMergeNode in="coloredBlur"/>
             <feMergeNode in="SourceGraphic"/>
           </feMerge>
         </filter>
+        <filter id="pulseFilter">
+          <feGaussianBlur stdDeviation={Math.sin(breathingPhase) * 2 + 1} result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
       </defs>
-      <g filter="url(#glow)">
+      <g filter="url(#connectionGlow)">
         {renderConnections()}
       </g>
     </svg>
