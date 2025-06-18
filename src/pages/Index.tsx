@@ -7,15 +7,32 @@ import { FloatingDictionary } from '../components/FloatingDictionary';
 import { PoemaNavigator } from '../components/PoemaNavigator';
 import { SapicasarEngine } from '../components/SapicasarEngine';
 import { AutopoieticWeb } from '../components/AutopoieticWeb';
+import { GlitchProvider, useGlitch } from '../contexts/GlitchContext';
+import { useGlitchEffects } from '../hooks/useGlitchEffects';
 
-const Index = () => {
+const IndexContent = () => {
   const [currentState, setCurrentState] = useState('deseo');
   const [pulseIntensity, setPulseIntensity] = useState(0.5);
-  const [isGlitching, setIsGlitching] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [autoNavigate, setAutoNavigate] = useState(true);
   const [breathingPhase, setBreathingPhase] = useState(0);
   const [sapicasarFragments, setSapicasarFragments] = useState<string[]>([]);
+
+  const { triggerGlitch, glitchState } = useGlitch();
+  const glitchEffects = useGlitchEffects('main-interface');
+
+  // Click global listener para triggers de glitch
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      // Probabilidad de glitch en cada click
+      if (Math.random() < 0.4) {
+        triggerGlitch();
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, [triggerGlitch]);
 
   // Autonavegación infinita poemaútica
   useEffect(() => {
@@ -60,18 +77,19 @@ const Index = () => {
     const glitchInterval = setInterval(() => {
       const glitchProbability = 0.15 + pulseIntensity * 0.1;
       if (Math.random() < glitchProbability) {
-        setIsGlitching(true);
-        setTimeout(() => setIsGlitching(false), 150 + Math.random() * 300);
+        triggerGlitch();
       }
     }, 2000);
 
     return () => clearInterval(glitchInterval);
-  }, [pulseIntensity]);
+  }, [pulseIntensity, triggerGlitch]);
 
   const handleStateChange = (newState: string) => {
     setCurrentState(newState);
     setAutoNavigate(false); // Pausar autonavegación cuando el usuario interviene
     setTimeout(() => setAutoNavigate(true), 30000); // Reanudar después de 30s
+    // Trigger glitch en cambios de estado
+    if (Math.random() < 0.6) triggerGlitch();
   };
 
   const handleSapicasarFragment = (fragment: string) => {
@@ -80,10 +98,11 @@ const Index = () => {
 
   return (
     <div 
-      className={`min-h-screen bg-black text-white overflow-hidden relative transition-all duration-1000 ${isGlitching ? 'animate-pulse' : ''}`}
+      className={`min-h-screen bg-black text-white overflow-hidden relative transition-all duration-1000 ${glitchEffects.animation}`}
       style={{
-        transform: `scale(${1 + Math.sin(breathingPhase) * 0.02})`,
-        filter: `hue-rotate(${Math.sin(breathingPhase * 0.5) * 30}deg)`,
+        transform: `${glitchEffects.transform} scale(${1 + Math.sin(breathingPhase) * 0.02})`,
+        filter: `${glitchEffects.filter} ${glitchEffects.colorShift} hue-rotate(${Math.sin(breathingPhase * 0.5) * 30}deg)`,
+        opacity: glitchEffects.opacity,
       }}
     >
       {/* Fondo de constelación dinámica que responde al cursor */}
@@ -119,15 +138,20 @@ const Index = () => {
       {/* Header Glitch con respiración */}
       <header className="relative z-10 p-8 text-center">
         <h1 
-          className={`text-6xl font-thin tracking-widest mb-4 transition-all duration-300 ${isGlitching ? 'animate-bounce' : ''}`}
+          className={`text-6xl font-thin tracking-widest mb-4 transition-all duration-300 ${glitchEffects.animation}`}
           style={{
             textShadow: `0 0 ${pulseIntensity * 20}px rgba(255, 255, 255, 0.5)`,
             letterSpacing: `${0.1 + Math.sin(breathingPhase) * 0.05}em`,
+            filter: glitchEffects.filter,
+            transform: glitchEffects.transform,
           }}
         >
           <span className="text-pink-400">LA</span>
           <span className="text-cyan-400">POEMA</span>
           <span className="text-white opacity-70">.expandida</span>
+          {glitchEffects.textGlitch && (
+            <span className="text-red-400 animate-pulse">{glitchEffects.textGlitch}</span>
+          )}
         </h1>
         <p className="text-lg opacity-70 max-w-2xl mx-auto leading-relaxed transition-opacity duration-500">
           universo textual abierto / constelación de memoria-deseo / 
@@ -169,7 +193,7 @@ const Index = () => {
         <ConstellationMap 
           currentState={currentState}
           pulseIntensity={pulseIntensity}
-          isGlitching={isGlitching}
+          isGlitching={glitchState.isActive}
           mousePos={mousePos}
           breathingPhase={breathingPhase}
         />
@@ -177,8 +201,8 @@ const Index = () => {
 
       {/* Interfaz Glitch Flotante */}
       <GlitchInterface 
-        isActive={isGlitching} 
-        intensity={pulseIntensity}
+        isActive={glitchState.isActive} 
+        intensity={glitchState.intensity}
       />
 
       {/* Diccionario Poético Flotante */}
@@ -206,10 +230,19 @@ const Index = () => {
           autoNavigation: autoNavigate,
           sapicasarFragments: sapicasarFragments.length,
           autopoieticEvolution: breathingPhase,
-          recursiveDepth: Math.floor(breathingPhase * 10) % 5
+          recursiveDepth: Math.floor(breathingPhase * 10) % 5,
+          glitchState: glitchState
         })}
       </div>
     </div>
+  );
+};
+
+const Index = () => {
+  return (
+    <GlitchProvider>
+      <IndexContent />
+    </GlitchProvider>
   );
 };
 

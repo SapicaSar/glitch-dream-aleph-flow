@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useGlitchEffects } from '../hooks/useGlitchEffects';
 
 interface AutopoieticNode {
   id: string;
@@ -18,6 +18,7 @@ interface AutopoieticWebProps {
 export const AutopoieticWeb = ({ sapicasarFragments, breathingPhase, currentState }: AutopoieticWebProps) => {
   const [autoNodes, setAutoNodes] = useState<AutopoieticNode[]>([]);
   const [webEvolution, setWebEvolution] = useState(0);
+  const glitchEffects = useGlitchEffects('autopoietic-web');
 
   // Crear nodos autopoiéticos a partir de fragmentos
   useEffect(() => {
@@ -70,14 +71,19 @@ export const AutopoieticWeb = ({ sapicasarFragments, breathingPhase, currentStat
   return (
     <div className="fixed bottom-20 right-4 z-30 w-80 h-60">
       <div 
-        className="w-full h-full bg-black bg-opacity-90 border border-purple-400 rounded-lg p-3 backdrop-blur-sm relative overflow-hidden"
+        className={`w-full h-full bg-black bg-opacity-90 border border-purple-400 rounded-lg p-3 backdrop-blur-sm relative overflow-hidden ${glitchEffects.animation}`}
         style={{
-          transform: `rotate(${Math.sin(breathingPhase * 0.2) * 2}deg)`,
-          borderColor: `hsl(${Math.sin(breathingPhase) * 60 + 280}, 70%, 60%)`
+          transform: `${glitchEffects.transform} rotate(${Math.sin(breathingPhase * 0.2) * 2}deg)`,
+          borderColor: `hsl(${Math.sin(breathingPhase) * 60 + 280}, 70%, 60%)`,
+          filter: glitchEffects.filter,
+          opacity: glitchEffects.opacity
         }}
       >
         <h4 className="text-purple-400 text-xs font-mono mb-2 border-b border-purple-400 pb-1">
           red autopoiética ∞ {webEvolution}
+          {glitchEffects.textGlitch && (
+            <span className="text-cyan-400 ml-2">{glitchEffects.textGlitch}</span>
+          )}
         </h4>
 
         {/* Renderizar nodos autopoiéticos */}
@@ -91,13 +97,14 @@ export const AutopoieticWeb = ({ sapicasarFragments, breathingPhase, currentStat
             return (
               <div
                 key={node.id}
-                className="absolute w-4 h-4 rounded-full border border-purple-400 bg-purple-900 flex items-center justify-center text-xs"
+                className={`absolute w-4 h-4 rounded-full border border-purple-400 bg-purple-900 flex items-center justify-center text-xs ${glitchEffects.animation}`}
                 style={{
                   left: `${x}%`,
                   top: `${y}%`,
                   transform: `translate(-50%, -50%) scale(${0.5 + node.autopoieticWeight * 0.5})`,
                   opacity: 0.6 + node.autopoieticWeight * 0.4,
-                  boxShadow: `0 0 ${node.autopoieticWeight * 10}px rgba(168, 85, 247, 0.6)`
+                  boxShadow: `0 0 ${node.autopoieticWeight * 10}px rgba(168, 85, 247, 0.6)`,
+                  filter: glitchEffects.colorShift
                 }}
               >
                 {node.generationLevel % 10}
@@ -135,7 +142,8 @@ export const AutopoieticWeb = ({ sapicasarFragments, breathingPhase, currentStat
                     strokeWidth="1"
                     strokeDasharray="2,2"
                     style={{
-                      opacity: (node.autopoieticWeight + connNode.autopoieticWeight) / 2
+                      opacity: (node.autopoieticWeight + connNode.autopoieticWeight) / 2,
+                      filter: glitchEffects.colorShift
                     }}
                   />
                 );
