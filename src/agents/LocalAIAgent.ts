@@ -1,5 +1,5 @@
 
-import { pipeline, Pipeline } from '@huggingface/transformers';
+import { pipeline } from '@huggingface/transformers';
 
 export interface AIGenerationRequest {
   prompt: string;
@@ -9,7 +9,7 @@ export interface AIGenerationRequest {
 }
 
 export class LocalAIAgent {
-  private textGenerator: Pipeline | null = null;
+  private textGenerator: any = null;
   private isInitialized = false;
 
   async initialize(): Promise<void> {
