@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PoemaFragment } from '../services/PoemaScrapingService';
 import { localAIAgent } from '../agents/LocalAIAgent';
 import { useGlitch } from '../contexts/GlitchContext';
@@ -26,6 +26,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
   const { triggerGlitch, glitchState } = useGlitch();
   const glitchEffects = useGlitchEffects('universe-interface');
 
+  // Fixed hook calls - always called in the same order
   const headerText = useTypewriter(
     "LAPOEMA.UNIVERSO.AUTOPOIÉTICO", 
     { speed: 100, randomSpeed: true, cursor: true }
@@ -34,6 +35,25 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
   const subtitleText = useTypewriter(
     "archivo infinito / red neuronal poética / universo textual autoescritura logarítmica", 
     { speed: 50, delay: 2000, randomSpeed: true }
+  );
+
+  // Pre-compute typewriter texts for all fragments to avoid conditional hooks
+  const fragmentTexts = useMemo(() => {
+    return fragments.map(fragment => 
+      fragment.content
+    );
+  }, [fragments]);
+
+  // Single typewriter hook for active fragment content
+  const activeFragmentTypewriterText = useTypewriter(
+    activeFragment?.content || '', 
+    { speed: 40, randomSpeed: true }
+  );
+
+  // Single typewriter hook for generated text
+  const generatedTypewriterText = useTypewriter(
+    generatedText, 
+    { speed: 30, randomSpeed: true }
   );
 
   // Mouse tracking for reactive effects
@@ -96,16 +116,8 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
     }
   };
 
-  const TypewriterFragment = ({ fragment, index }: { fragment: PoemaFragment; index: number }) => {
-    const fragmentText = useTypewriter(
-      fragment.content, 
-      { 
-        speed: 30 + fragment.intensity * 50, 
-        randomSpeed: true,
-        delay: index * 200 
-      }
-    );
-
+  // Static component without hooks to avoid conditional hook calls
+  const FragmentCard = ({ fragment, index }: { fragment: PoemaFragment; index: number }) => {
     return (
       <RadicalMutator 
         mutationIntensity={fragment.intensity} 
@@ -134,7 +146,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
             </div>
             
             <div className="text-white leading-relaxed mb-4 group-hover:text-cyan-100 transition-colors min-h-[60px]">
-              {fragmentText}
+              {fragmentTexts[index] || fragment.content}
             </div>
 
             {fragment.tags && (
@@ -222,14 +234,14 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
         </div>
       </header>
 
-      {/* Grid de Fragmentos con Typewriter */}
+      {/* Grid de Fragmentos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {fragments.map((fragment, index) => (
-          <TypewriterFragment key={fragment.id} fragment={fragment} index={index} />
+          <FragmentCard key={fragment.id} fragment={fragment} index={index} />
         ))}
       </div>
 
-      {/* Panel de Generación Activa con Typewriter */}
+      {/* Panel de Generación Activa */}
       {activeFragment && (
         <div className="fixed bottom-0 left-0 right-0 bg-black/95 border-t border-pink-400 p-6 backdrop-blur-sm">
           <div className="max-w-6xl mx-auto">
@@ -237,7 +249,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
               <div>
                 <h3 className="text-pink-400 font-mono text-sm mb-2">FRAGMENTO_ORIGEN</h3>
                 <div className="text-white bg-gray-900/50 p-4 rounded border border-gray-700">
-                  {useTypewriter(activeFragment.content, { speed: 40, randomSpeed: true })}
+                  {activeFragmentTypewriterText}
                 </div>
               </div>
 
@@ -253,7 +265,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
                     </div>
                   ) : (
                     <div className="leading-relaxed">
-                      {useTypewriter(generatedText, { speed: 30, randomSpeed: true })}
+                      {generatedTypewriterText}
                     </div>
                   )}
                 </div>
