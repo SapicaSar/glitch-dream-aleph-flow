@@ -15,7 +15,7 @@ export const useTypewriter = (
 ) => {
   const [displayText, setDisplayText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showCursor, setShowCursor] = useState(false);
 
   const {
     speed = 50,
@@ -26,35 +26,47 @@ export const useTypewriter = (
   } = options;
 
   useEffect(() => {
-    if (!text) return;
+    if (!text) {
+      setDisplayText('');
+      return;
+    }
 
-    setIsTyping(true);
-    setCurrentIndex(0);
+    let currentIndex = 0;
     setDisplayText('');
+    setIsTyping(true);
 
     const typeInterval = setInterval(() => {
-      setCurrentIndex((prev) => {
-        if (prev >= text.length) {
-          setIsTyping(false);
-          if (loop) {
-            setTimeout(() => {
-              setCurrentIndex(0);
-              setDisplayText('');
-            }, delay);
-          }
-          clearInterval(typeInterval);
-          return prev;
+      if (currentIndex >= text.length) {
+        setIsTyping(false);
+        if (loop) {
+          setTimeout(() => {
+            currentIndex = 0;
+            setDisplayText('');
+            setIsTyping(true);
+          }, delay);
         }
+        clearInterval(typeInterval);
+        return;
+      }
 
-        const newIndex = prev + 1;
-        setDisplayText(text.substring(0, newIndex));
-        return newIndex;
-      });
-    }, randomSpeed ? speed + Math.random() * 100 : speed);
+      setDisplayText(text.substring(0, currentIndex + 1));
+      currentIndex++;
+    }, randomSpeed ? speed + Math.random() * 50 : speed);
 
     return () => clearInterval(typeInterval);
   }, [text, speed, delay, loop, randomSpeed]);
 
-  const cursorChar = cursor && isTyping ? '█' : '';
+  // Cursor blinking effect
+  useEffect(() => {
+    if (!cursor) return;
+
+    const cursorInterval = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 530);
+
+    return () => clearInterval(cursorInterval);
+  }, [cursor]);
+
+  const cursorChar = cursor && (isTyping || showCursor) ? '█' : '';
   return `${displayText}${cursorChar}`;
 };

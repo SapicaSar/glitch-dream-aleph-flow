@@ -6,6 +6,8 @@ import { useGlitch } from '../contexts/GlitchContext';
 import { useGlitchEffects } from '../hooks/useGlitchEffects';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { RadicalMutator } from './RadicalMutator';
+import { GlitchInterface } from './GlitchInterface';
+import { PoeticOracle } from './PoeticOracle';
 
 interface UniverseInterfaceProps {
   fragments: PoemaFragment[];
@@ -18,8 +20,10 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
   const [isGenerating, setIsGenerating] = useState(false);
   const [mutationCount, setMutationCount] = useState(0);
   const [autowriteActive, setAutowriteActive] = useState(true);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [pulseIntensity, setPulseIntensity] = useState(0.5);
   
-  const { triggerGlitch } = useGlitch();
+  const { triggerGlitch, glitchState } = useGlitch();
   const glitchEffects = useGlitchEffects('universe-interface');
 
   const headerText = useTypewriter(
@@ -31,6 +35,17 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
     "archivo infinito / red neuronal poética / universo textual autoescritura logarítmica", 
     { speed: 50, delay: 2000, randomSpeed: true }
   );
+
+  // Mouse tracking for reactive effects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+      setPulseIntensity(0.3 + (e.clientX / window.innerWidth) * 0.7);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // Auto-escritura continua de fragmentos
   useEffect(() => {
@@ -98,6 +113,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
       >
         <div
           onClick={() => handleFragmentClick(fragment)}
+          onMouseEnter={() => Math.random() > 0.8 && triggerGlitch()}
           className={`
             group relative p-6 rounded-lg border cursor-pointer
             transition-all duration-500 hover:scale-105 hover:z-20
@@ -156,6 +172,8 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
     );
   };
 
+  const currentOracleState = activeFragment?.type || 'deseo';
+
   return (
     <div 
       className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-8 relative overflow-hidden"
@@ -165,6 +183,16 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
         opacity: glitchEffects.opacity
       }}
     >
+      {/* Glitch Interface */}
+      <GlitchInterface isActive={glitchState.isActive} intensity={glitchState.intensity} />
+
+      {/* Poetic Oracle */}
+      <PoeticOracle 
+        currentState={currentOracleState} 
+        pulseIntensity={pulseIntensity}
+        mousePos={mousePos}
+      />
+
       {/* Header Autoescritura */}
       <header className="text-center mb-12 relative z-10">
         <h1 className="text-6xl font-thin tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-cyan-400 to-yellow-400 mb-4 min-h-[80px]">
@@ -178,6 +206,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
         <div className="mt-4 flex justify-center gap-4">
           <button
             onClick={() => setAutowriteActive(!autowriteActive)}
+            onMouseEnter={() => triggerGlitch()}
             className={`px-4 py-2 rounded border transition-all ${
               autowriteActive 
                 ? 'bg-green-500/20 border-green-400 text-green-400' 
@@ -241,7 +270,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
         </div>
       )}
 
-      {/* Partículas Logarítmicas */}
+      {/* Partículas Logarítmicas Reactivas */}
       <div className="fixed inset-0 pointer-events-none z-0">
         {[...Array(Math.floor(Math.log(mutationCount + 1) * 5) + 10)].map((_, i) => (
           <div
@@ -252,7 +281,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 3}s`,
               animationDuration: `${2 + Math.random() * 2}s`,
-              transform: `scale(${0.5 + Math.log(mutationCount + 1) * 0.1})`
+              transform: `scale(${0.5 + Math.log(mutationCount + 1) * 0.1 + Math.sin(mousePos.x * 0.01) * 0.3})`
             }}
           />
         ))}
