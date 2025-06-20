@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useGlitchEffects } from '../hooks/useGlitchEffects';
 

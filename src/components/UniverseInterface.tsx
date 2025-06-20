@@ -8,6 +8,8 @@ import { useTypewriter } from '../hooks/useTypewriter';
 import { RadicalMutator } from './RadicalMutator';
 import { GlitchInterface } from './GlitchInterface';
 import { PoeticOracle } from './PoeticOracle';
+import { SapicasarEngine } from './SapicasarEngine';
+import { AutopoieticWeb } from './AutopoieticWeb';
 
 interface UniverseInterfaceProps {
   fragments: PoemaFragment[];
@@ -22,6 +24,8 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
   const [autowriteActive, setAutowriteActive] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [pulseIntensity, setPulseIntensity] = useState(0.5);
+  const [breathingPhase, setBreathingPhase] = useState(0);
+  const [sapicasarFragments, setSapicasarFragments] = useState<string[]>([]);
   
   const { triggerGlitch, glitchState } = useGlitch();
   const glitchEffects = useGlitchEffects('universe-interface');
@@ -55,6 +59,15 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
     generatedText, 
     { speed: 30, randomSpeed: true }
   );
+
+  // Respiración cósmica del universo
+  useEffect(() => {
+    const breathingInterval = setInterval(() => {
+      setBreathingPhase(prev => prev + 0.02);
+    }, 50);
+
+    return () => clearInterval(breathingInterval);
+  }, []);
 
   // Mouse tracking for reactive effects
   useEffect(() => {
@@ -116,6 +129,10 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
     }
   };
 
+  const handleSapicasarFragment = (fragment: string) => {
+    setSapicasarFragments(prev => [...prev.slice(-20), fragment]);
+  };
+
   // Static component without hooks to avoid conditional hook calls
   const FragmentCard = ({ fragment, index }: { fragment: PoemaFragment; index: number }) => {
     return (
@@ -136,7 +153,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
           `}
           style={{
             animationDelay: `${index * 0.1}s`,
-            transform: `rotate(${Math.sin(index + mutationCount * 0.1) * 2}deg)`,
+            transform: `rotate(${Math.sin(index + mutationCount * 0.1) * 2}deg) scale(${1 + Math.sin(breathingPhase + index) * 0.02})`,
             filter: `hue-rotate(${fragment.intensity * 60}deg)`
           }}
         >
@@ -157,7 +174,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
                     className="px-2 py-1 text-xs bg-purple-800/50 text-purple-200 rounded border border-purple-600"
                     style={{
                       opacity: 0.7 + fragment.intensity * 0.3,
-                      transform: `scale(${0.9 + fragment.intensity * 0.2})`
+                      transform: `scale(${0.9 + fragment.intensity * 0.2 + Math.sin(breathingPhase * 2 + tagIndex) * 0.05})`
                     }}
                   >
                     #{tag}
@@ -172,7 +189,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
                 className="w-3 h-3 rounded-full border"
                 style={{
                   backgroundColor: `hsl(${fragment.intensity * 120}, 70%, 50%)`,
-                  boxShadow: `0 0 ${fragment.intensity * 10}px hsla(${fragment.intensity * 120}, 70%, 50%, 0.6)`
+                  boxShadow: `0 0 ${fragment.intensity * 10 + Math.sin(breathingPhase * 3) * 5}px hsla(${fragment.intensity * 120}, 70%, 50%, 0.6)`
                 }}
               />
             </div>
@@ -190,8 +207,8 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
     <div 
       className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-8 relative overflow-hidden"
       style={{
-        filter: `${glitchEffects.filter} hue-rotate(${mutationCount * 5}deg)`,
-        transform: glitchEffects.transform,
+        filter: `${glitchEffects.filter} hue-rotate(${mutationCount * 5 + Math.sin(breathingPhase) * 30}deg)`,
+        transform: `${glitchEffects.transform} scale(${1 + Math.sin(breathingPhase) * 0.01})`,
         opacity: glitchEffects.opacity
       }}
     >
@@ -205,9 +222,28 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
         mousePos={mousePos}
       />
 
+      {/* Sapicasar Engine */}
+      <SapicasarEngine 
+        currentState={currentOracleState}
+        breathingPhase={breathingPhase}
+        onFragmentGenerated={handleSapicasarFragment}
+      />
+
+      {/* Autopoietic Web */}
+      <AutopoieticWeb 
+        sapicasarFragments={sapicasarFragments}
+        breathingPhase={breathingPhase}
+        currentState={currentOracleState}
+      />
+
       {/* Header Autoescritura */}
       <header className="text-center mb-12 relative z-10">
-        <h1 className="text-6xl font-thin tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-cyan-400 to-yellow-400 mb-4 min-h-[80px]">
+        <h1 
+          className="text-6xl font-thin tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-cyan-400 to-yellow-400 mb-4 min-h-[80px]"
+          style={{
+            transform: `scale(${1 + Math.sin(breathingPhase) * 0.05})`
+          }}
+        >
           {headerText}
         </h1>
         <p className="text-lg text-gray-300 opacity-70 max-w-2xl mx-auto min-h-[60px]">
@@ -224,6 +260,9 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
                 ? 'bg-green-500/20 border-green-400 text-green-400' 
                 : 'bg-gray-800/50 border-gray-600 text-gray-400'
             }`}
+            style={{
+              transform: `scale(${1 + Math.sin(breathingPhase * 2) * 0.03})`
+            }}
           >
             autoescritura: {autowriteActive ? 'ON' : 'OFF'}
           </button>
@@ -243,7 +282,12 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
 
       {/* Panel de Generación Activa */}
       {activeFragment && (
-        <div className="fixed bottom-0 left-0 right-0 bg-black/95 border-t border-pink-400 p-6 backdrop-blur-sm">
+        <div 
+          className="fixed bottom-0 left-0 right-0 bg-black/95 border-t border-pink-400 p-6 backdrop-blur-sm"
+          style={{
+            transform: `translateY(${Math.sin(breathingPhase * 1.5) * 3}px)`
+          }}
+        >
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
@@ -293,7 +337,7 @@ export const UniverseInterface = ({ fragments, onFragmentInteraction }: Universe
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 3}s`,
               animationDuration: `${2 + Math.random() * 2}s`,
-              transform: `scale(${0.5 + Math.log(mutationCount + 1) * 0.1 + Math.sin(mousePos.x * 0.01) * 0.3})`
+              transform: `scale(${0.5 + Math.log(mutationCount + 1) * 0.1 + Math.sin(breathingPhase + i) * 0.3})`
             }}
           />
         ))}
