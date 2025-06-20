@@ -145,7 +145,7 @@ const IndexContent = () => {
             Generando variaciones poéticas infinitas...
           </div>
           <div className="text-yellow-400">
-            > sistema.respira() → bucle_infinito_consciente
+            {'>'}  sistema.respira() → bucle_infinito_consciente
           </div>
           <div className="text-white animate-pulse">█</div>
         </div>
