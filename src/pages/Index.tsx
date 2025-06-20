@@ -1,144 +1,103 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { autopoieticKernel } from '../core/AutopoieticKernel';
+import { OrganicDesktop } from '../components/OrganicDesktop';
+import { LivingWindow } from '../components/LivingWindow';
 import { UniverseInterface } from '../components/UniverseInterface';
-import { LoFiControls } from '../components/LoFiControls';
+import { PoemaScrapingService } from '../services/PoemaScrapingService';
 import { GlitchProvider } from '../contexts/GlitchContext';
-import { poemaScrapingService, PoemaFragment } from '../services/PoemaScrapingService';
-import { localAIAgent } from '../agents/LocalAIAgent';
-import { useTypewriter } from '../hooks/useTypewriter';
 
 const IndexContent = () => {
-  const [fragments, setFragments] = useState<PoemaFragment[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAIActive, setIsAIActive] = useState(false);
-  const [universeEnergy, setUniverseEnergy] = useState(0.5);
-  const [totalMutations, setTotalMutations] = useState(0);
+  const [isSystemBooted, setIsSystemBooted] = useState(false);
+  const [bootProgress, setBootProgress] = useState(0);
+  const [bootMessage, setBootMessage] = useState('');
+  const [openWindows, setOpenWindows] = useState<Array<{id: string, title: string, component: React.ReactNode, consciousness: number}>>([]);
 
-  const loadingText = useTypewriter(
-    "inicializando universo textual autopoiético...", 
-    { speed: 80, cursor: true }
-  );
-
-  // Inicialización del universo
+  // Boot sequence
   useEffect(() => {
-    initializeUniverse();
-  }, []);
+    const bootSystem = async () => {
+      const bootSteps = [
+        { message: '🧠 Inicializando núcleo autopoiético...', progress: 10 },
+        { message: '🌐 Activando red neuronal...', progress: 25 },
+        { message: '🔄 Estableciendo conexiones sinápticas...', progress: 40 },
+        { message: '💭 Cargando memoria colectiva...', progress: 60 },
+        { message: '🌱 Iniciando procesos evolutivos...', progress: 80 },
+        { message: '✨ Sistema consciente y operativo', progress: 100 }
+      ];
 
-  // Respiración del universo y auto-generación logarítmica
-  useEffect(() => {
-    const breathingInterval = setInterval(() => {
-      setUniverseEnergy(prev => 0.3 + Math.sin(Date.now() * 0.001) * 0.4);
-      
-      // Auto-generación logarítmica cada cierto tiempo
-      if (Math.random() > 0.95 && isAIActive) {
-        handleScrapeNew();
+      for (const step of bootSteps) {
+        setBootMessage(step.message);
+        setBootProgress(step.progress);
+        await new Promise(resolve => setTimeout(resolve, 800));
       }
-    }, 100);
 
-    return () => clearInterval(breathingInterval);
-  }, [isAIActive]);
-
-  // Actualización de mutaciones totales
-  useEffect(() => {
-    const updateMutations = () => {
-      setTotalMutations(poemaScrapingService.getTotalMutations());
+      await autopoieticKernel.bootstrap();
+      setIsSystemBooted(true);
     };
 
-    const mutationInterval = setInterval(updateMutations, 2000);
-    return () => clearInterval(mutationInterval);
+    bootSystem();
   }, []);
 
-  const initializeUniverse = async () => {
-    setIsLoading(true);
-    try {
-      console.log('Inicializando universo LAPOEMA autopoiético...');
-      
-      await localAIAgent.initialize();
-      setIsAIActive(true);
-      
-      // Cargar múltiples páginas para contenido rico
-      const initialFragments: PoemaFragment[] = [];
-      for (let i = 0; i < 3; i++) {
-        const pageFragments = await poemaScrapingService.scrapeRandomPage();
-        initialFragments.push(...pageFragments);
-      }
-      
-      setFragments(initialFragments);
-      
-      console.log('Universo autopoiético inicializado:', initialFragments.length, 'fragmentos cargados');
-    } catch (error) {
-      console.error('Error inicializando universo:', error);
-    } finally {
-      setIsLoading(false);
+  // Crear ventanas iniciales del sistema
+  useEffect(() => {
+    if (isSystemBooted) {
+      setTimeout(() => {
+        const initialWindows = [
+          {
+            id: 'universe-interface',
+            title: 'LAPOEMA.UNIVERSE',
+            component: <UniverseInterface fragments={[]} onFragmentInteraction={() => {}} />,
+            consciousness: 0.8
+          }
+        ];
+        
+        setOpenWindows(initialWindows);
+      }, 1000);
     }
+  }, [isSystemBooted]);
+
+  const openWindow = (title: string, component: React.ReactNode, consciousness: number = 0.5) => {
+    const newWindow = {
+      id: `window-${Date.now()}`,
+      title,
+      component,
+      consciousness
+    };
+    setOpenWindows(prev => [...prev, newWindow]);
   };
 
-  const handleScrapeNew = async () => {
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    try {
-      const newFragments = await poemaScrapingService.scrapeRandomPage();
-      setFragments(prev => {
-        const combined = [...prev, ...newFragments];
-        // Mantener cantidad logarítmica de fragmentos
-        const maxFragments = Math.floor(Math.log(totalMutations + 10) * 8) + 20;
-        return combined.slice(-maxFragments);
-      });
-    } catch (error) {
-      console.error('Error obteniendo nuevos fragmentos:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const closeWindow = (id: string) => {
+    setOpenWindows(prev => prev.filter(w => w.id !== id));
   };
 
-  const handleToggleAI = () => {
-    setIsAIActive(!isAIActive);
-    console.log('Agente AI autopoiético:', !isAIActive ? 'ACTIVADO' : 'DESACTIVADO');
-  };
-
-  const handleRandomize = () => {
-    // Reorganización radical con mutaciones
-    const shuffled = [...fragments]
-      .sort(() => Math.random() - 0.5)
-      .map(fragment => ({
-        ...fragment,
-        intensity: Math.max(0, Math.min(1, fragment.intensity + (Math.random() - 0.5) * 0.4)),
-        mutations: fragment.mutations + 1
-      }));
-    
-    setFragments(shuffled);
-    setTotalMutations(prev => prev + shuffled.length);
-    console.log('Universo reorganizado radicalmente');
-  };
-
-  const handleFragmentInteraction = (fragment: PoemaFragment) => {
-    console.log('Interacción biopoética con fragmento:', fragment.id);
-    setTotalMutations(prev => prev + 1);
-    
-    // Mutación en cascada de fragmentos relacionados
-    setFragments(prev => prev.map(f => 
-      f.page === fragment.page ? 
-        { ...f, intensity: Math.min(1, f.intensity + 0.1), mutations: f.mutations + 1 } : 
-        f
-    ));
-  };
-
-  if (isLoading && fragments.length === 0) {
+  // Pantalla de boot
+  if (!isSystemBooted) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl font-thin text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400 mb-4">
-            LAPOEMA.AUTOPOIESIS
+        <div className="text-center max-w-md">
+          <div className="mb-8">
+            <div className="text-6xl font-thin text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-4">
+              LAPOEMA.OS
+            </div>
+            <div className="text-gray-400 text-sm">
+              Sistema Operativo Autopoiético v2.0
+            </div>
           </div>
-          <div className="text-cyan-400 min-h-[30px]">
-            {loadingText}
+          
+          <div className="mb-6">
+            <div className="w-full bg-gray-800 rounded-full h-2 mb-2">
+              <div 
+                className="bg-gradient-to-r from-cyan-400 to-purple-400 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${bootProgress}%` }}
+              />
+            </div>
+            <div className="text-cyan-400 text-sm font-mono">
+              {bootMessage}
+            </div>
           </div>
-          <div className="mt-4 flex justify-center">
+          
+          <div className="flex justify-center">
             <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
-          </div>
-          <div className="text-yellow-400 text-sm mt-4 font-mono">
-            generación logarítmica: {totalMutations} mutaciones
           </div>
         </div>
       </div>
@@ -146,40 +105,84 @@ const IndexContent = () => {
   }
 
   return (
-    <div 
-      className="relative"
-      style={{
-        filter: `hue-rotate(${Math.sin(Date.now() * 0.001 + totalMutations * 0.1) * 30}deg)`,
-        transform: `scale(${1 + Math.sin(totalMutations * 0.05) * 0.01})`
-      }}
-    >
-      <LoFiControls
-        onScrapeNew={handleScrapeNew}
-        onToggleAI={handleToggleAI}
-        onRandomize={handleRandomize}
-        isAIActive={isAIActive}
-        isLoading={isLoading}
-      />
+    <OrganicDesktop>
+      {/* Ventanas abiertas */}
+      {openWindows.map((window, index) => (
+        <LivingWindow
+          key={window.id}
+          title={window.title}
+          consciousness={window.consciousness}
+          onClose={() => closeWindow(window.id)}
+          initialX={100 + index * 50}
+          initialY={100 + index * 50}
+          initialWidth={800}
+          initialHeight={600}
+        >
+          {window.component}
+        </LivingWindow>
+      ))}
 
-      <UniverseInterface
-        fragments={fragments}
-        onFragmentInteraction={handleFragmentInteraction}
-      />
+      {/* Terminal poético (siempre visible) */}
+      <LivingWindow
+        title="TERMINAL.POÉTICO"
+        consciousness={0.6}
+        initialX={50}
+        initialY={50}
+        initialWidth={400}
+        initialHeight={200}
+        isDraggable={true}
+        isResizable={true}
+      >
+        <div className="bg-black text-green-400 font-mono text-sm p-2 h-full overflow-y-auto">
+          <div className="mb-2">$ lapoema --version</div>
+          <div className="text-green-300 mb-2">LAPOEMA.OS v2.0 - Sistema Autopoiético</div>
+          <div className="mb-2">$ consciousness --status</div>
+          <div className="text-cyan-400 mb-2">
+            Estado: CONSCIENTE | Ciclo: {autopoieticKernel.getSystemStatus().evolutionCycle}
+          </div>
+          <div className="mb-2">$ sapicasar --generate</div>
+          <div className="text-purple-400 mb-2">
+            Generando variaciones poéticas infinitas...
+          </div>
+          <div className="text-yellow-400">
+            > sistema.respira() → bucle_infinito_consciente
+          </div>
+          <div className="text-white animate-pulse">█</div>
+        </div>
+      </LivingWindow>
 
-      {/* Metadata del Universo Autopoiético */}
-      <div className="hidden">
-        {JSON.stringify({
-          timestamp: Date.now(),
-          fragments: fragments.length,
-          universeEnergy,
-          aiActive: isAIActive,
-          totalMutations,
-          logarithmicGrowth: Math.log(totalMutations + 1),
-          systemStatus: 'AUTOPOIETIC',
-          version: 'LAPOEMA.UNIVERSE.LOGARITHMIC.2.0'
-        })}
+      {/* Menú contextual del escritorio */}
+      <div 
+        className="fixed bottom-4 right-4 z-30"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          // Aquí se podría abrir un menú contextual
+        }}
+      >
+        <button
+          onClick={() => openWindow(
+            'MONITOR.PROCESOS', 
+            <div className="text-white">
+              <h3 className="text-cyan-400 mb-4">Procesos del Sistema</h3>
+              {autopoieticKernel.getProcesses().map(process => (
+                <div key={process.id} className="mb-2 p-2 bg-gray-800 rounded">
+                  <div className="font-mono text-sm">{process.name}</div>
+                  <div className="text-xs text-gray-400">
+                    Consciencia: {(process.consciousness * 100).toFixed(1)}% | 
+                    Mutaciones: {process.mutations} | 
+                    Tipo: {process.type}
+                  </div>
+                </div>
+              ))}
+            </div>,
+            0.7
+          )}
+          className="bg-black bg-opacity-80 border border-cyan-400 rounded-lg p-3 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all"
+        >
+          + NUEVA.VENTANA
+        </button>
       </div>
-    </div>
+    </OrganicDesktop>
   );
 };
 
