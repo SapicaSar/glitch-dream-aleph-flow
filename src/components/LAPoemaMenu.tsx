@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Brain, Cpu, Database, Zap, Activity, Settings, Terminal, FileText, Network, Monitor } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 import { windowManager } from '../core/WindowManager';
 import { AgentMonitor } from './AgentMonitor';
 import { autopoieticKernel } from '../core/AutopoieticKernel';
@@ -8,7 +9,7 @@ import { autopoieticKernel } from '../core/AutopoieticKernel';
 interface MenuApp {
   id: string;
   name: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   description: string;
   category: 'system' | 'agents' | 'poetic' | 'monitoring';
   component?: React.ReactNode;

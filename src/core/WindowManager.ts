@@ -1,4 +1,3 @@
-
 export interface WindowState {
   id: string;
   title: string;
@@ -98,14 +97,14 @@ export class WindowManager {
     }
   }
 
-  private constrainToScreen(window: WindowState): void {
+  private constrainToScreen(windowState: WindowState): void {
     const screenWidth = window.innerWidth || 1920;
     const screenHeight = window.innerHeight || 1080;
     
-    window.x = Math.max(0, Math.min(window.x, screenWidth - window.width));
-    window.y = Math.max(0, Math.min(window.y, screenHeight - window.height));
-    window.width = Math.min(window.width, screenWidth - window.x);
-    window.height = Math.min(window.height, screenHeight - window.y);
+    windowState.x = Math.max(0, Math.min(windowState.x, screenWidth - windowState.width));
+    windowState.y = Math.max(0, Math.min(windowState.y, screenHeight - windowState.height));
+    windowState.width = Math.min(windowState.width, screenWidth - windowState.x);
+    windowState.height = Math.min(windowState.height, screenHeight - windowState.y);
   }
 
   public bringToFront(id: string): void {
@@ -136,8 +135,8 @@ export class WindowManager {
   }
 
   public maximizeWindow(id: string): void {
-    const window = this.windows.get(id);
-    if (window) {
+    const windowState = this.windows.get(id);
+    if (windowState) {
       this.updateWindow(id, {
         x: 0,
         y: 0,
