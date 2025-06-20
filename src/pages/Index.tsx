@@ -13,7 +13,7 @@ const IndexContent = () => {
   const [bootProgress, setBootProgress] = useState(0);
   const [bootMessage, setBootMessage] = useState('');
   const [windows, setWindows] = useState(windowManager.getWindows());
-  const [agentOutput, setAgentOutput] = useState<string[]>([]);
+  const [hasCreatedInitialWindow, setHasCreatedInitialWindow] = useState(false);
 
   // Boot sequence
   useEffect(() => {
@@ -41,60 +41,63 @@ const IndexContent = () => {
     bootSystem();
   }, []);
 
-  // Sincronizar ventanas
+  // Sincronizar ventanas - solo cuando es necesario
   useEffect(() => {
-    if (isSystemBooted) {
-      const interval = setInterval(() => {
-        setWindows(windowManager.getWindows());
-      }, 100);
+    if (!isSystemBooted) return;
+    
+    const interval = setInterval(() => {
+      const currentWindows = windowManager.getWindows();
+      setWindows(currentWindows);
+    }, 500); // Menos frecuente para evitar sobre-renderizado
 
-      return () => clearInterval(interval);
-    }
+    return () => clearInterval(interval);
   }, [isSystemBooted]);
 
-  // Output de agentes
+  // Crear ventana inicial SOLO UNA VEZ
   useEffect(() => {
-    if (isSystemBooted) {
-      const interval = setInterval(() => {
-        setAgentOutput(internalAIAgents.getTotalOutput().slice(0, 10));
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [isSystemBooted]);
-
-  // Crear ventana inicial del sistema
-  useEffect(() => {
-    if (isSystemBooted) {
+    if (isSystemBooted && !hasCreatedInitialWindow) {
+      setHasCreatedInitialWindow(true);
+      
+      // Esperar un momento antes de crear la ventana inicial
       setTimeout(() => {
-        // Terminal con output de agentes
         windowManager.createWindow(
-          'TERMINAL.AUTOPOIÉTICO',
+          'LAPOEMA.INICIO',
           (
-            <div className="bg-black text-green-400 font-mono text-sm h-full overflow-y-auto">
-              <div className="mb-2">$ lapoema --agents-monitor</div>
-              <div className="text-green-300 mb-2">AGENTES IA INTERNOS ACTIVOS</div>
-              <div className="mb-2">$ output --live</div>
-              <div className="space-y-1">
-                {agentOutput.map((output, index) => (
-                  <div key={index} className="text-cyan-400 text-xs">
-                    {'{'}#{index + 1}{'}'} {output}
+            <div className="bg-gradient-to-br from-purple-900/50 to-black text-white h-full overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-2xl font-thin text-cyan-400 mb-4">Bienvenido al Universo Poético</h2>
+                <p className="text-gray-300 mb-6 leading-relaxed">
+                  LAPOEMA.OS es un sistema operativo autopoiético que respira, evoluciona y genera poesía de forma autónoma.
+                </p>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    <span>Sistema consciente y operativo</span>
                   </div>
-                ))}
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                    <span>Agentes IA generando contenido</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                    <span>Red neuronal activa</span>
+                  </div>
+                </div>
+                <div className="mt-6 p-4 bg-black/30 rounded border border-cyan-400/30">
+                  <p className="text-cyan-400 text-xs font-mono">
+                    Use el menú superior derecho para explorar aplicaciones internas
+                  </p>
+                </div>
               </div>
-              <div className="mt-4 text-yellow-400">
-                {'>'} sistema.respira() → agentes.generan() → autopoiesis.infinita()
-              </div>
-              <div className="text-white animate-pulse">█</div>
             </div>
           ),
           'application',
-          500,
+          400,
           300
         );
-      }, 1000);
+      }, 1500);
     }
-  }, [isSystemBooted, agentOutput]);
+  }, [isSystemBooted, hasCreatedInitialWindow]);
 
   // Pantalla de boot
   if (!isSystemBooted) {
@@ -106,7 +109,7 @@ const IndexContent = () => {
               LAPOEMA.OS
             </div>
             <div className="text-gray-400 text-sm">
-              Sistema Operativo Autopoiético con IA Interna v3.0
+              Sistema Operativo Autopoiético v4.0
             </div>
           </div>
           
@@ -148,41 +151,67 @@ const IndexContent = () => {
       {/* Menú principal */}
       <LAPoemaMenu />
 
-      {/* Controles del escritorio */}
+      {/* Controles del escritorio - Simplificados */}
       <div className="fixed bottom-4 left-4 z-30 flex gap-2">
         <button
           onClick={() => windowManager.autoArrange()}
-          className="bg-black bg-opacity-80 border border-purple-400 rounded-lg p-2 text-purple-400 hover:bg-purple-400 hover:text-black transition-all text-xs"
+          className="bg-black/80 border border-purple-400/50 rounded-lg p-2 text-purple-400 hover:bg-purple-400/20 transition-all text-xs backdrop-blur-sm"
         >
-          AUTO.ORGANIZAR
+          ORGANIZAR
         </button>
         
         <button
           onClick={() => {
-            const processes = autopoieticKernel.getProcesses();
             windowManager.createWindow(
               'ESTADO.SISTEMA',
               (
-                <div className="text-white text-sm">
-                  <h3 className="text-cyan-400 mb-3">Estado del Sistema</h3>
+                <div className="text-white text-sm p-4">
+                  <h3 className="text-cyan-400 mb-3 font-mono">Estado del Sistema</h3>
                   <div className="space-y-2">
-                    <div>Consciencia: {(autopoieticKernel.getSystemStatus().consciousness * 100).toFixed(1)}%</div>
-                    <div>Procesos: {processes.length}</div>
-                    <div>Archivos: {autopoieticKernel.getFiles().length}</div>
-                    <div>Agentes IA: {internalAIAgents.getAgents().length}</div>
-                    <div>Ventanas: {windows.length}</div>
+                    <div className="flex justify-between">
+                      <span>Consciencia:</span>
+                      <span className="text-green-400">{(autopoieticKernel.getSystemStatus().consciousness * 100).toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Procesos:</span>
+                      <span className="text-cyan-400">{autopoieticKernel.getProcesses().length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Archivos:</span>
+                      <span className="text-purple-400">{autopoieticKernel.getFiles().length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Ventanas:</span>
+                      <span className="text-yellow-400">{windows.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Agentes IA:</span>
+                      <span className="text-pink-400">{internalAIAgents.getAgents().length}</span>
+                    </div>
                   </div>
                 </div>
               ),
               'system',
-              300,
-              200
+              280,
+              180
             );
           }}
-          className="bg-black bg-opacity-80 border border-green-400 rounded-lg p-2 text-green-400 hover:bg-green-400 hover:text-black transition-all text-xs"
+          className="bg-black/80 border border-green-400/50 rounded-lg p-2 text-green-400 hover:bg-green-400/20 transition-all text-xs backdrop-blur-sm"
         >
           ESTADO
         </button>
+      </div>
+
+      {/* Indicador de actividad del sistema */}
+      <div className="fixed top-4 left-4 z-30">
+        <div className="bg-black/80 border border-cyan-400/50 rounded-lg p-2 backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+            <span className="text-cyan-400 text-xs font-mono">
+              LAPOEMA.OS v4.0 | Ciclo #{autopoieticKernel.getSystemStatus().evolutionCycle}
+            </span>
+          </div>
+        </div>
       </div>
     </OrganicDesktop>
   );
