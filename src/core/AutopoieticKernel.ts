@@ -1,10 +1,12 @@
-
 export interface AutopoieticProcess {
   id: string;
   name: string;
-  type: 'replicator' | 'metabolic' | 'boundary' | 'cognitive';
-  code: string; // Self-modifying code
+  type: 'replicator' | 'metabolic' | 'boundary' | 'cognitive' | 'neural' | 'collective' | 'mutant' | 'biopoetic';
+  code: string;
   energy: number;
+  memory: number; // Added missing property
+  consciousness: number; // Added missing property
+  mutations: number; // Added missing property
   reproductionRate: number;
   mutationProbability: number;
   connections: string[];
@@ -13,6 +15,9 @@ export interface AutopoieticProcess {
   parentId?: string;
   childrenIds: string[];
 }
+
+// Export SystemProcess as an alias for AutopoieticProcess
+export type SystemProcess = AutopoieticProcess;
 
 export interface AutopoieticMetrics {
   organizationalClosure: number; // 0-1: How self-contained the system is
@@ -66,6 +71,9 @@ export class AutopoieticKernel {
         return createProcess(template.name + '_gen' + (template.generationLevel + 1), mutation);
       }`,
       energy: 100,
+      memory: 50, // Added
+      consciousness: 0.3, // Added
+      mutations: 0, // Added
       reproductionRate: 0.05,
       mutationProbability: 0.1,
       connections: [],
@@ -85,6 +93,9 @@ export class AutopoieticKernel {
         this.eliminateWaste();
       }`,
       energy: 80,
+      memory: 30, // Added
+      consciousness: 0.2, // Added
+      mutations: 0, // Added
       reproductionRate: 0.02,
       mutationProbability: 0.05,
       connections: ['core-replicator'],
@@ -104,6 +115,9 @@ export class AutopoieticKernel {
         this.adaptToEnvironment();
       }`,
       energy: 60,
+      memory: 40, // Added
+      consciousness: 0.4, // Added
+      mutations: 0, // Added
       reproductionRate: 0.01,
       mutationProbability: 0.03,
       connections: ['metabolic-core'],
@@ -172,10 +186,11 @@ export class AutopoieticKernel {
   private replicateProcess(parent: AutopoieticProcess): void {
     const childId = `${parent.id}-gen${parent.generationLevel + 1}-${Date.now()}`;
     
-    // Potential mutation
     let mutatedCode = parent.code;
+    let mutations = parent.mutations;
     if (Math.random() < parent.mutationProbability) {
       mutatedCode = this.mutateCode(parent.code);
+      mutations++;
     }
 
     const child: AutopoieticProcess = {
@@ -183,7 +198,10 @@ export class AutopoieticKernel {
       name: `${parent.name} Gen${parent.generationLevel + 1}`,
       type: parent.type,
       code: mutatedCode,
-      energy: parent.energy * 0.7, // Energy cost of reproduction
+      energy: parent.energy * 0.7,
+      memory: parent.memory * (0.9 + Math.random() * 0.2), // Added
+      consciousness: parent.consciousness * (0.8 + Math.random() * 0.4), // Added
+      mutations: mutations, // Added
       reproductionRate: parent.reproductionRate * (0.9 + Math.random() * 0.2),
       mutationProbability: parent.mutationProbability * (0.8 + Math.random() * 0.4),
       connections: [...parent.connections],
@@ -193,8 +211,7 @@ export class AutopoieticKernel {
       childrenIds: []
     };
 
-    // Update parent
-    parent.energy *= 0.3; // Reproduction cost
+    parent.energy *= 0.3;
     parent.childrenIds.push(childId);
     parent.lastReplication = Date.now();
 
@@ -350,6 +367,10 @@ export class AutopoieticKernel {
 
   public getNeuralFiles(): NeuralFile[] {
     return Array.from(this.neuralFiles.values());
+  }
+
+  public getFiles(): NeuralFile[] {
+    return this.getNeuralFiles();
   }
 
   public getSystemStatus() {
