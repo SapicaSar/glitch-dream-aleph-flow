@@ -6,6 +6,8 @@ import { LAPoemaMenu } from '../components/LAPoemaMenu';
 import { windowManager } from '../core/WindowManager';
 import { GlitchProvider } from '../contexts/GlitchContext';
 import { MielElectrica } from '../components/MielElectrica';
+import { VisualArchitectureManager } from '../components/VisualArchitectureManager';
+import { LivecodingPoeticoInterface } from '../components/LivecodingPoeticoInterface';
 
 const IndexContent = () => {
   const [isSystemBooted, setIsSystemBooted] = useState(false);
@@ -173,6 +175,12 @@ const IndexContent = () => {
 
       {/* Miel Eléctrica - Demostraciones de Singularidad */}
       <MielElectrica />
+
+      {/* Visual Architecture Manager */}
+      <VisualArchitectureManager />
+
+      {/* Livecoding Poetico Interface */}
+      <LivecodingPoeticoInterface />
 
       {/* Autopoietic Control Panel */}
       <div className="fixed bottom-4 left-4 z-30 flex gap-2">

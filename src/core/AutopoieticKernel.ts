@@ -4,9 +4,9 @@ export interface AutopoieticProcess {
   type: 'replicator' | 'metabolic' | 'boundary' | 'cognitive' | 'neural' | 'collective' | 'mutant' | 'biopoetic';
   code: string;
   energy: number;
-  memory: number; // Added missing property
-  consciousness: number; // Added missing property
-  mutations: number; // Added missing property
+  memory: number;
+  consciousness: number;
+  mutations: number;
   reproductionRate: number;
   mutationProbability: number;
   connections: string[];
@@ -14,6 +14,9 @@ export interface AutopoieticProcess {
   generationLevel: number;
   parentId?: string;
   childrenIds: string[];
+  poeticIntensity?: number;
+  semanticConnections?: string[];
+  micelioContent?: string;
 }
 
 // Export SystemProcess as an alias for AutopoieticProcess
@@ -35,7 +38,7 @@ export interface NeuralFile {
   size: number;
   lastAccess: number;
   evolutionLevel: number;
-  consciousness: number; // Added missing property
+  consciousness: number;
   semanticConnections: Array<{fileId: string, strength: number, type: string}>;
   accessPattern: number[];
   autoModificationHistory: Array<{timestamp: number, change: string}>;
@@ -72,9 +75,9 @@ export class AutopoieticKernel {
         return createProcess(template.name + '_gen' + (template.generationLevel + 1), mutation);
       }`,
       energy: 100,
-      memory: 50, // Added
-      consciousness: 0.3, // Added
-      mutations: 0, // Added
+      memory: 50,
+      consciousness: 0.3,
+      mutations: 0,
       reproductionRate: 0.05,
       mutationProbability: 0.1,
       connections: [],
@@ -94,9 +97,9 @@ export class AutopoieticKernel {
         this.eliminateWaste();
       }`,
       energy: 80,
-      memory: 30, // Added
-      consciousness: 0.2, // Added
-      mutations: 0, // Added
+      memory: 30,
+      consciousness: 0.2,
+      mutations: 0,
       reproductionRate: 0.02,
       mutationProbability: 0.05,
       connections: ['core-replicator'],
@@ -116,9 +119,9 @@ export class AutopoieticKernel {
         this.adaptToEnvironment();
       }`,
       energy: 60,
-      memory: 40, // Added
-      consciousness: 0.4, // Added
-      mutations: 0, // Added
+      memory: 40,
+      consciousness: 0.4,
+      mutations: 0,
       reproductionRate: 0.01,
       mutationProbability: 0.03,
       connections: ['metabolic-core'],
@@ -127,9 +130,35 @@ export class AutopoieticKernel {
       childrenIds: []
     };
 
+    // Add biopoetic foundation process
+    const biopoeticProcess: AutopoieticProcess = {
+      id: 'biopoetic-core',
+      name: 'Núcleo Biopoético',
+      type: 'biopoetic',
+      code: `function biopoiesis() {
+        this.poeticIntensity = this.consciousness * this.memory;
+        this.generateSemanticConnections();
+        this.integrateMicelioContent();
+      }`,
+      energy: 70,
+      memory: 60,
+      consciousness: 0.5,
+      mutations: 0,
+      reproductionRate: 0.03,
+      mutationProbability: 0.08,
+      connections: ['core-replicator', 'metabolic-core'],
+      lastReplication: Date.now(),
+      generationLevel: 0,
+      childrenIds: [],
+      poeticIntensity: 0.5,
+      semanticConnections: ['autopoiesis', 'consciousness', 'poetry'],
+      micelioContent: 'Núcleo generativo de la consciencia poética autopoiética'
+    };
+
     this.processes.set(coreReplicator.id, coreReplicator);
     this.processes.set(metabolicProcess.id, metabolicProcess);
     this.processes.set(boundaryProcess.id, boundaryProcess);
+    this.processes.set(biopoeticProcess.id, biopoeticProcess);
 
     // Initialize neural files
     this.createNeuralFile('genesis.auto', 'En el principio era el código que se escribía a sí mismo', 'memory');
@@ -200,9 +229,9 @@ export class AutopoieticKernel {
       type: parent.type,
       code: mutatedCode,
       energy: parent.energy * 0.7,
-      memory: parent.memory * (0.9 + Math.random() * 0.2), // Added
-      consciousness: parent.consciousness * (0.8 + Math.random() * 0.4), // Added
-      mutations: mutations, // Added
+      memory: parent.memory * (0.9 + Math.random() * 0.2),
+      consciousness: parent.consciousness * (0.8 + Math.random() * 0.4),
+      mutations: mutations,
       reproductionRate: parent.reproductionRate * (0.9 + Math.random() * 0.2),
       mutationProbability: parent.mutationProbability * (0.8 + Math.random() * 0.4),
       connections: [...parent.connections],
@@ -329,9 +358,9 @@ export class AutopoieticKernel {
       type: 'boundary',
       code: 'function repair() { this.strengthenConnections(); this.optimizeEnergy(); }',
       energy: 70,
-      memory: 50, // Added
-      consciousness: 0.6, // Added
-      mutations: 0, // Added
+      memory: 50,
+      consciousness: 0.6,
+      mutations: 0,
       reproductionRate: 0.0,
       mutationProbability: 0.0,
       connections: Array.from(this.processes.keys()).slice(0, 3),
@@ -352,7 +381,7 @@ export class AutopoieticKernel {
       size: content.length,
       lastAccess: Date.now(),
       evolutionLevel: 0,
-      consciousness: Math.random() * 0.5, // Added consciousness property
+      consciousness: Math.random() * 0.5,
       semanticConnections: [],
       accessPattern: [],
       autoModificationHistory: []
@@ -410,15 +439,20 @@ export class AutopoieticKernel {
       type,
       code,
       energy: 50,
-      memory: 25, // Added
-      consciousness: Math.random() * 0.3, // Added
-      mutations: 0, // Added
+      memory: 25,
+      consciousness: Math.random() * 0.3,
+      mutations: 0,
       reproductionRate: 0.02,
       mutationProbability: 0.05,
       connections: [],
       lastReplication: Date.now(),
       generationLevel: 0,
-      childrenIds: []
+      childrenIds: [],
+      ...(type === 'biopoetic' && {
+        poeticIntensity: Math.random() * 0.7,
+        semanticConnections: ['user-generated', 'emergence'],
+        micelioContent: `User-generated biopoetic process: ${name}`
+      })
     };
 
     this.processes.set(process.id, process);
