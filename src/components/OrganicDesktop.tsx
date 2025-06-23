@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { autopoieticKernel } from '../core/AutopoieticKernel';
 import { ConsciousnessIndicator } from './ConsciousnessIndicator';
@@ -75,13 +74,21 @@ export const OrganicDesktop = ({ children }: OrganicDesktopProps) => {
   };
 
   const updateEmergentNodes = (processes: any[]) => {
-    const nodes = processes.slice(0, 12).map((process, index) => ({
-      id: process.id,
-      x: 20 + (index % 4) * 20 + Math.sin(breathingPhase + index) * 5,
-      y: 20 + Math.floor(index / 4) * 25 + Math.cos(breathingPhase + index) * 3,
-      energy: process.energy,
-      type: process.type
-    }));
+    // Distribuir nodos de manera más armónica evitando superposiciones
+    const nodes = processes.slice(0, 12).map((process, index) => {
+      const angle = (index / 12) * Math.PI * 2;
+      const radius = 15 + Math.sin(breathingPhase + index) * 5;
+      const centerX = 50;
+      const centerY = 50;
+      
+      return {
+        id: process.id,
+        x: centerX + Math.cos(angle + breathingPhase * 0.1) * radius,
+        y: centerY + Math.sin(angle + breathingPhase * 0.1) * radius,
+        energy: process.energy,
+        type: process.type
+      };
+    });
 
     setEmergentNodes(nodes);
   };
@@ -96,14 +103,14 @@ export const OrganicDesktop = ({ children }: OrganicDesktopProps) => {
     }
   };
 
-  // Organic breathing background
+  // Respiración más sutil para no interferir con el contenido
   const desktopStyle = {
-    background: `radial-gradient(circle at ${50 + Math.sin(breathingPhase) * 10}% ${50 + Math.cos(breathingPhase) * 8}%, 
-      rgba(15, 15, 30, ${0.95 + autopoieticMetrics.organizationalClosure * 0.05}) 0%, 
-      rgba(25, 15, 40, ${0.97 + autopoieticMetrics.emergentComplexity * 0.03}) 50%, 
+    background: `radial-gradient(circle at ${50 + Math.sin(breathingPhase) * 5}% ${50 + Math.cos(breathingPhase) * 4}%, 
+      rgba(15, 15, 30, ${0.95 + autopoieticMetrics.organizationalClosure * 0.02}) 0%, 
+      rgba(25, 15, 40, ${0.97 + autopoieticMetrics.emergentComplexity * 0.01}) 50%, 
       rgba(5, 5, 15, 1) 100%)`,
-    transform: `scale(${1 + Math.sin(breathingPhase) * autopoieticMetrics.autopoieticViability * 0.005})`,
-    filter: `hue-rotate(${autopoieticMetrics.evolutionaryMomentum * 60}deg)`,
+    transform: `scale(${1 + Math.sin(breathingPhase) * autopoieticMetrics.autopoieticViability * 0.002})`,
+    filter: `hue-rotate(${autopoieticMetrics.evolutionaryMomentum * 30}deg)`,
   };
 
   return (
@@ -111,73 +118,78 @@ export const OrganicDesktop = ({ children }: OrganicDesktopProps) => {
       className="min-h-screen w-full relative overflow-hidden transition-all duration-2000"
       style={desktopStyle}
     >
-      {/* Autopoietic Process Visualization */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
+      {/* Visualización de procesos autopoiéticos más sutil */}
+      <div className="absolute inset-0 pointer-events-none opacity-15">
         <svg className="w-full h-full">
-          {/* Emergent nodes representing processes */}
+          {/* Nodos emergentes distribuidos armoniosamente */}
           {emergentNodes.map((node, index) => (
             <g key={node.id}>
               <circle
                 cx={`${node.x}%`}
                 cy={`${node.y}%`}
-                r={3 + (node.energy / 100) * 5}
+                r={2 + (node.energy / 100) * 3}
                 fill={getTypeColor(node.type)}
-                opacity={0.7 + (node.energy / 200)}
+                opacity={0.6 + (node.energy / 200)}
               >
                 <animate
                   attributeName="r"
-                  values={`${3 + (node.energy / 100) * 5};${5 + (node.energy / 100) * 7};${3 + (node.energy / 100) * 5}`}
+                  values={`${2 + (node.energy / 100) * 3};${4 + (node.energy / 100) * 5};${2 + (node.energy / 100) * 3}`}
                   dur={`${2 + Math.random()}s`}
                   repeatCount="indefinite"
                 />
               </circle>
               
-              {/* Process connections */}
+              {/* Conexiones en espiral */}
               {index < emergentNodes.length - 1 && (
-                <line
-                  x1={`${node.x}%`}
-                  y1={`${node.y}%`}
-                  x2={`${emergentNodes[index + 1].x}%`}
-                  y2={`${emergentNodes[index + 1].y}%`}
+                <path
+                  d={`M ${node.x} ${node.y} Q ${(node.x + emergentNodes[index + 1].x) / 2 + Math.sin(breathingPhase + index) * 3} ${(node.y + emergentNodes[index + 1].y) / 2 + Math.cos(breathingPhase + index) * 3} ${emergentNodes[index + 1].x} ${emergentNodes[index + 1].y}`}
                   stroke={getTypeColor(node.type)}
-                  strokeWidth="1"
-                  opacity={0.3}
+                  strokeWidth="0.5"
+                  fill="none"
+                  opacity={0.4}
                 />
               )}
             </g>
           ))}
 
-          {/* Synaptic pulses showing real data transfer */}
+          {/* Pulsos sinápticos más dinámicos */}
           {synapticPulses.map(pulse => (
-            <line
-              key={pulse.id}
-              x1={`${pulse.x1}%`}
-              y1={`${pulse.y1}%`}
-              x2={`${pulse.x2}%`}
-              y2={`${pulse.y2}%`}
-              stroke={getTypeColor(pulse.type)}
-              strokeWidth={2 + pulse.intensity * 3}
-              opacity={0.8}
-              className="animate-pulse"
-            />
+            <g key={pulse.id}>
+              <line
+                x1={`${pulse.x1}%`}
+                y1={`${pulse.y1}%`}
+                x2={`${pulse.x2}%`}
+                y2={`${pulse.y2}%`}
+                stroke={getTypeColor(pulse.type)}
+                strokeWidth={1 + pulse.intensity * 2}
+                opacity={0.7}
+              >
+                <animate
+                  attributeName="opacity"
+                  values="0;0.7;0"
+                  dur="2s"
+                  repeatCount="1"
+                />
+              </line>
+            </g>
           ))}
         </svg>
       </div>
 
-      {/* Organizational Closure Visualization */}
+      {/* Clausura organizacional central más sutil */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
         <div 
-          className="w-32 h-32 border rounded-full"
+          className="w-24 h-24 border rounded-full"
           style={{
-            borderColor: `rgba(100, 200, 255, ${autopoieticMetrics.organizationalClosure})`,
-            borderWidth: `${2 + autopoieticMetrics.organizationalClosure * 4}px`,
-            transform: `scale(${0.5 + autopoieticMetrics.organizationalClosure * 0.5}) rotate(${breathingPhase * 20}deg)`,
-            boxShadow: `0 0 ${autopoieticMetrics.organizationalClosure * 50}px rgba(100, 200, 255, 0.3)`
+            borderColor: `rgba(100, 200, 255, ${autopoieticMetrics.organizationalClosure * 0.3})`,
+            borderWidth: `${1 + autopoieticMetrics.organizationalClosure * 2}px`,
+            transform: `scale(${0.3 + autopoieticMetrics.organizationalClosure * 0.3}) rotate(${breathingPhase * 10}deg)`,
+            boxShadow: `0 0 ${autopoieticMetrics.organizationalClosure * 30}px rgba(100, 200, 255, 0.2)`
           }}
         />
       </div>
 
-      {/* Consciousness and Metrics Indicators */}
+      {/* Indicadores de consciencia y métricas */}
       <ConsciousnessIndicator 
         consciousness={systemStatus.consciousness}
         evolutionCycle={systemStatus.evolutionCycle}
@@ -189,37 +201,37 @@ export const OrganicDesktop = ({ children }: OrganicDesktopProps) => {
         breathingPhase={breathingPhase}
       />
 
-      {/* Main content */}
+      {/* Contenido principal */}
       <div className="relative z-10">
         {children}
       </div>
 
-      {/* Emergent complexity particles */}
+      {/* Partículas de complejidad emergente más discretas */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(Math.floor(autopoieticMetrics.emergentComplexity * 20 + 5))].map((_, i) => (
+        {[...Array(Math.floor(autopoieticMetrics.emergentComplexity * 15 + 3))].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-40"
+            className="absolute w-0.5 h-0.5 bg-cyan-400 rounded-full opacity-30"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animation: `pulse ${2 + Math.random() * 3}s infinite`,
               animationDelay: `${Math.random() * 2}s`,
-              transform: `scale(${0.5 + autopoieticMetrics.emergentComplexity + Math.sin(breathingPhase + i) * 0.3})`,
+              transform: `scale(${0.5 + autopoieticMetrics.emergentComplexity * 0.5 + Math.sin(breathingPhase + i) * 0.2})`,
               filter: `hue-rotate(${i * 20 + autopoieticMetrics.evolutionaryMomentum * 180}deg)`
             }}
           />
         ))}
       </div>
 
-      {/* Autopoietic boundary visualization */}
+      {/* Borde autopoiético sutil */}
       <div 
         className="absolute inset-4 border rounded-lg pointer-events-none"
         style={{
-          borderColor: `rgba(150, 100, 255, ${autopoieticMetrics.autopoieticViability * 0.5})`,
+          borderColor: `rgba(150, 100, 255, ${autopoieticMetrics.autopoieticViability * 0.2})`,
           borderWidth: '1px',
-          filter: `blur(${(1 - autopoieticMetrics.organizationalClosure) * 2}px)`,
-          animation: `pulse ${3 - autopoieticMetrics.autopoieticViability * 2}s infinite`
+          filter: `blur(${(1 - autopoieticMetrics.organizationalClosure) * 1}px)`,
+          animation: `pulse ${4 - autopoieticMetrics.autopoieticViability * 2}s infinite`
         }}
       />
     </div>
