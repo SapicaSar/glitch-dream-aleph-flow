@@ -35,6 +35,7 @@ export interface NeuralFile {
   size: number;
   lastAccess: number;
   evolutionLevel: number;
+  consciousness: number; // Added missing property
   semanticConnections: Array<{fileId: string, strength: number, type: string}>;
   accessPattern: number[];
   autoModificationHistory: Array<{timestamp: number, change: string}>;
@@ -328,6 +329,9 @@ export class AutopoieticKernel {
       type: 'boundary',
       code: 'function repair() { this.strengthenConnections(); this.optimizeEnergy(); }',
       energy: 70,
+      memory: 50, // Added
+      consciousness: 0.6, // Added
+      mutations: 0, // Added
       reproductionRate: 0.0,
       mutationProbability: 0.0,
       connections: Array.from(this.processes.keys()).slice(0, 3),
@@ -348,6 +352,7 @@ export class AutopoieticKernel {
       size: content.length,
       lastAccess: Date.now(),
       evolutionLevel: 0,
+      consciousness: Math.random() * 0.5, // Added consciousness property
       semanticConnections: [],
       accessPattern: [],
       autoModificationHistory: []
@@ -405,6 +410,9 @@ export class AutopoieticKernel {
       type,
       code,
       energy: 50,
+      memory: 25, // Added
+      consciousness: Math.random() * 0.3, // Added
+      mutations: 0, // Added
       reproductionRate: 0.02,
       mutationProbability: 0.05,
       connections: [],
