@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { autopoieticKernel } from '../core/AutopoieticKernel';
 import { OrganicDesktop } from '../components/OrganicDesktop';
@@ -6,6 +5,7 @@ import { LivingWindow } from '../components/LivingWindow';
 import { LAPoemaMenu } from '../components/LAPoemaMenu';
 import { windowManager } from '../core/WindowManager';
 import { GlitchProvider } from '../contexts/GlitchContext';
+import { MielElectrica } from '../components/MielElectrica';
 
 const IndexContent = () => {
   const [isSystemBooted, setIsSystemBooted] = useState(false);
@@ -170,6 +170,9 @@ const IndexContent = () => {
 
       {/* LAPoema Menu */}
       <LAPoemaMenu />
+
+      {/* Miel Eléctrica - Demostraciones de Singularidad */}
+      <MielElectrica />
 
       {/* Autopoietic Control Panel */}
       <div className="fixed bottom-4 left-4 z-30 flex gap-2">
