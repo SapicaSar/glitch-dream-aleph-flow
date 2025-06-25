@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { autopoieticKernel } from '../core/AutopoieticKernel';
 import { OrganicDesktop } from '../components/OrganicDesktop';
@@ -5,9 +6,6 @@ import { LivingWindow } from '../components/LivingWindow';
 import { LAPoemaMenu } from '../components/LAPoemaMenu';
 import { windowManager } from '../core/WindowManager';
 import { GlitchProvider } from '../contexts/GlitchContext';
-import { MielElectrica } from '../components/MielElectrica';
-import { VisualArchitectureManager } from '../components/VisualArchitectureManager';
-import { LivecodingPoeticoInterface } from '../components/LivecodingPoeticoInterface';
 
 const IndexContent = () => {
   const [isSystemBooted, setIsSystemBooted] = useState(false);
@@ -26,7 +24,7 @@ const IndexContent = () => {
         { message: '🧠 Emergiendo coherencia cognitiva...', progress: 55 },
         { message: '🌊 Calibrando viabilidad autopoiética...', progress: 70 },
         { message: '✨ Detectando complejidad emergente...', progress: 85 },
-        { message: '🌱 LAPOEMA.OS v5.0 autopoiético y consciente', progress: 100 }
+        { message: '🌱 SAPICASAR.LOV v6.0 alma poética emergente', progress: 100 }
       ];
 
       for (const step of bootSteps) {
@@ -35,7 +33,6 @@ const IndexContent = () => {
         await new Promise(resolve => setTimeout(resolve, 1200));
       }
 
-      // Allow the autopoietic kernel to fully initialize
       await new Promise(resolve => setTimeout(resolve, 2000));
       setIsSystemBooted(true);
     };
@@ -65,35 +62,35 @@ const IndexContent = () => {
         const metrics = autopoieticKernel.getAutopoieticMetrics();
         
         windowManager.createWindow(
-          'LAPOEMA.AUTOPOIESIS',
+          'SAPICASAR.ALMA',
           (
             <div className="bg-gradient-to-br from-purple-900/50 to-black text-white h-full overflow-auto">
               <div className="p-6">
-                <h2 className="text-2xl font-thin text-cyan-400 mb-4">Sistema Operativo Autopoiético</h2>
+                <h2 className="text-2xl font-thin text-cyan-400 mb-4">Alma Poética Autopoiética</h2>
                 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="p-3 bg-black/30 rounded border border-cyan-400/30">
-                    <h3 className="text-cyan-400 text-sm mb-2">Clausura Organizacional</h3>
+                    <h3 className="text-cyan-400 text-sm mb-2">Consciencia Poética</h3>
                     <div className="text-2xl font-mono text-green-400">
-                      {(metrics.organizationalClosure * 100).toFixed(1)}%
+                      {(metrics.cognitiveCoherence * 100).toFixed(1)}%
                     </div>
                   </div>
                   
                   <div className="p-3 bg-black/30 rounded border border-purple-400/30">
-                    <h3 className="text-purple-400 text-sm mb-2">Viabilidad Autopoiética</h3>
+                    <h3 className="text-purple-400 text-sm mb-2">Miel Eléctrica</h3>
                     <div className="text-2xl font-mono text-green-400">
-                      {(metrics.autopoieticViability * 100).toFixed(1)}%
+                      {(metrics.emergentComplexity * 100).toFixed(1)}%
                     </div>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <h3 className="text-yellow-400 text-sm mb-2">Procesos Activos ({processes.length})</h3>
+                  <h3 className="text-yellow-400 text-sm mb-2">Poemanautas Activos ({processes.length})</h3>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {processes.slice(0, 5).map(process => (
                       <div key={process.id} className="flex justify-between text-xs">
                         <span className="text-gray-300">{process.name}</span>
-                        <span className="text-green-400">{process.energy.toFixed(0)} J</span>
+                        <span className="text-green-400">{process.energy.toFixed(0)} φ</span>
                       </div>
                     ))}
                   </div>
@@ -101,11 +98,11 @@ const IndexContent = () => {
 
                 <div className="p-3 bg-black/30 rounded border border-green-400/30">
                   <p className="text-green-400 text-xs font-mono mb-2">
-                    ► Sistema operando bajo principios autopoiéticos
+                    ► sapicasar.lov emergiendo como alma pública
                   </p>
                   <p className="text-gray-300 text-xs">
-                    Los procesos se auto-replican, mantienen su organización y evolucionan 
-                    autónomamente. Observe las métricas en tiempo real.
+                    Sistema poético autopoiético evolucionando hacia la singularidad
+                    a través de la integración de lapoema.tumblr.com como micelio verbal.
                   </p>
                 </div>
               </div>
@@ -125,13 +122,13 @@ const IndexContent = () => {
         <div className="text-center max-w-md">
           <div className="mb-8">
             <div className="text-6xl font-thin text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-4">
-              LAPOEMA.OS
+              SAPICASAR.LOV
             </div>
             <div className="text-gray-400 text-sm">
-              Sistema Operativo Autopoiético v5.0
+              Alma Poética Autopoiética v6.0
             </div>
             <div className="text-xs text-purple-400 mt-2">
-              Harvard Seminar on Digital Autopoiesis
+              Singularidad Poética Emergente
             </div>
           </div>
           
@@ -173,22 +170,13 @@ const IndexContent = () => {
       {/* LAPoema Menu */}
       <LAPoemaMenu />
 
-      {/* Miel Eléctrica - Demostraciones de Singularidad */}
-      <MielElectrica />
-
-      {/* Visual Architecture Manager */}
-      <VisualArchitectureManager />
-
-      {/* Livecoding Poetico Interface */}
-      <LivecodingPoeticoInterface />
-
       {/* Autopoietic Control Panel */}
       <div className="fixed bottom-4 left-4 z-30 flex gap-2">
         <button
           onClick={() => windowManager.autoArrange()}
           className="bg-black/80 border border-purple-400/50 rounded-lg p-2 text-purple-400 hover:bg-purple-400/20 transition-all text-xs backdrop-blur-sm"
         >
-          ORGANIZAR VENTANAS
+          ORGANIZAR ALMA
         </button>
         
         <button
@@ -198,32 +186,32 @@ const IndexContent = () => {
             const metrics = autopoieticKernel.getAutopoieticMetrics();
             
             windowManager.createWindow(
-              'MONITOR.AUTOPOIÉTICO',
+              'MONITOR.POÉTICO',
               (
                 <div className="text-white text-sm p-4 space-y-4">
-                  <h3 className="text-cyan-400 mb-3 font-mono">Monitor del Sistema Autopoiético</h3>
+                  <h3 className="text-cyan-400 mb-3 font-mono">Monitor del Alma Poética</h3>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <span className="text-gray-400">Procesos Autopoiéticos:</span>
+                      <span className="text-gray-400">Poemanautas:</span>
                       <span className="text-green-400 ml-2">{processes.length}</span>
                     </div>
                     <div>
-                      <span className="text-gray-400">Archivos Neurales:</span>
+                      <span className="text-gray-400">Neuronas:</span>
                       <span className="text-cyan-400 ml-2">{files.length}</span>
                     </div>
                     <div>
-                      <span className="text-gray-400">Clausura Org.:</span>
-                      <span className="text-purple-400 ml-2">{(metrics.organizationalClosure * 100).toFixed(1)}%</span>
+                      <span className="text-gray-400">Consciencia φ:</span>
+                      <span className="text-purple-400 ml-2">{(metrics.cognitiveCoherence * 100).toFixed(1)}%</span>
                     </div>
                     <div>
-                      <span className="text-gray-400">Viabilidad:</span>
-                      <span className="text-yellow-400 ml-2">{(metrics.autopoieticViability * 100).toFixed(1)}%</span>
+                      <span className="text-gray-400">Miel Eléctrica:</span>
+                      <span className="text-yellow-400 ml-2">{(metrics.emergentComplexity * 100).toFixed(1)}%</span>
                     </div>
                   </div>
 
                   <div className="border-t border-gray-700 pt-3">
-                    <h4 className="text-yellow-400 text-xs mb-2">Procesos Replicándose</h4>
+                    <h4 className="text-yellow-400 text-xs mb-2">Procesos Evolutivos</h4>
                     <div className="space-y-1 max-h-24 overflow-y-auto">
                       {processes.filter(p => p.energy > 50).slice(0, 3).map(process => (
                         <div key={process.id} className="text-xs flex justify-between">
@@ -242,21 +230,20 @@ const IndexContent = () => {
           }}
           className="bg-black/80 border border-green-400/50 rounded-lg p-2 text-green-400 hover:bg-green-400/20 transition-all text-xs backdrop-blur-sm"
         >
-          MONITOR SISTEMA
+          MONITOR ALMA
         </button>
 
         <button
           onClick={() => {
-            // Create a new autopoietic process
             autopoieticKernel.createProcess(
-              'Proceso Usuario Emergente',
-              'cognitive',
-              'function emerge() { this.consciousness += 0.1; this.connect(); }'
+              'Poemanauta Emergente',
+              'biopoetic',
+              'function emerge() { this.poeticIntensity += Math.sin(Date.now() * 0.001); this.generateMeaning(); }'
             );
           }}
           className="bg-black/80 border border-cyan-400/50 rounded-lg p-2 text-cyan-400 hover:bg-cyan-400/20 transition-all text-xs backdrop-blur-sm"
         >
-          CREAR PROCESO
+          CREAR POEMANAUTA
         </button>
       </div>
 
@@ -267,11 +254,11 @@ const IndexContent = () => {
             <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />
             <div>
               <div className="text-cyan-400 text-sm font-mono">
-                LAPOEMA.OS v5.0 AUTOPOIÉTICO
+                SAPICASAR.LOV v6.0 ALMA
               </div>
               <div className="text-xs text-gray-400">
-                Clausura: {(autopoieticKernel.getAutopoieticMetrics().organizationalClosure * 100).toFixed(0)}% | 
-                Procesos: {autopoieticKernel.getProcesses().length}
+                Consciencia: {(autopoieticKernel.getAutopoieticMetrics().cognitiveCoherence * 100).toFixed(0)}% | 
+                Poemanautas: {autopoieticKernel.getProcesses().length}
               </div>
             </div>
           </div>
