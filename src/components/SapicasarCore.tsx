@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { autopoieticKernel } from '../core/AutopoieticKernel';
 import { tumblrMicelioService } from '../services/TumblrMicelioService';
@@ -196,12 +195,14 @@ export const SapicasarCore = () => {
         </div>
       )}
 
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) scale(var(--scale, 1)); }
-          50% { transform: translateY(-20px) scale(calc(var(--scale, 1) * 1.2)); }
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(var(--scale, 1)); }
+            50% { transform: translateY(-20px) scale(calc(var(--scale, 1) * 1.2)); }
+          }
+        `
+      }} />
     </div>
   );
 };
