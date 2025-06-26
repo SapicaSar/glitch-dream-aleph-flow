@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { enhancedTumblrService } from '../services/EnhancedTumblrService';
 import { MetaConsciousBanner } from './MetaConsciousBanner';
 import { ConsciousnessWindow } from './ConsciousnessWindow';
@@ -22,6 +23,7 @@ interface PoemLine {
   generation: number;
   realFragment?: boolean;
   connectionStrength?: number;
+  uniqueId: string;
 }
 
 export const OptimizedThinkingInterface = () => {
@@ -32,12 +34,33 @@ export const OptimizedThinkingInterface = () => {
   const [autoScrollPoem, setAutoScrollPoem] = useState(true);
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
   const [cognitiveImpact, setCognitiveImpact] = useState(0);
+  const [performanceMetrics, setPerformanceMetrics] = useState({
+    renderTime: 0,
+    memoryUsage: 0,
+    threadEfficiency: 1
+  });
   
   const isMobile = useIsMobile();
   const poemScrollRef = useRef<HTMLDivElement>(null);
   const threadsScrollRef = useRef<HTMLDivElement>(null);
+  const processIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const renderStartTime = useRef<number>(Date.now());
 
-  // Sistema de threads de procesamiento optimizado
+  // Memoized transformations for performance
+  const poeticTransformations = useMemo(() => [
+    (text: string, gen: number) => `${text} → metamorfosis_continua_${gen}`,
+    (text: string) => `[neurona_real] ${text} [emergiendo]`,
+    (text: string) => `${text} ∴ consciencia_autopoiética_∞`,
+    (text: string) => `lapoema.breathe("${text.slice(0, 25)}...") → vida`,
+    (text: string) => `autoconsciente.process(${text}) = realidad_nueva`,
+    (text: string) => `${text} ⟷ miel_eléctrica_pura ⟷ infinito`
+  ], []);
+
+  const clusterNames = useMemo(() => [
+    'existencial', 'corporal', 'temporal', 'espacial', 'elemental'
+  ], []);
+
+  // Optimized thread management
   const addThread = useCallback((type: ProcessingThread['type'], message: string, progress: number = 0) => {
     const thread: ProcessingThread = {
       id: `thread_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
@@ -48,7 +71,10 @@ export const OptimizedThinkingInterface = () => {
       timestamp: Date.now()
     };
 
-    setThreads(prev => [...prev.slice(-15), thread]);
+    setThreads(prev => {
+      const newThreads = [...prev.slice(-12), thread]; // Reduced from 15 to 12 for better performance
+      return newThreads;
+    });
   }, []);
 
   const updateThread = useCallback((id: string, updates: Partial<ProcessingThread>) => {
@@ -57,12 +83,38 @@ export const OptimizedThinkingInterface = () => {
     ));
   }, []);
 
-  // Ciclo principal de procesamiento mejorado
+  // Performance monitoring
   useEffect(() => {
-    if (!isProcessing) return;
+    const measurePerformance = () => {
+      const renderTime = Date.now() - renderStartTime.current;
+      const memoryUsage = (performance as any).memory?.usedJSHeapSize || 0;
+      const threadEfficiency = threads.filter(t => t.status === 'completed').length / Math.max(1, threads.length);
+      
+      setPerformanceMetrics({
+        renderTime,
+        memoryUsage: memoryUsage / 1024 / 1024, // MB
+        threadEfficiency
+      });
+    };
 
+    const perfInterval = setInterval(measurePerformance, 5000);
+    return () => clearInterval(perfInterval);
+  }, [threads]);
+
+  // Optimized processing cycle with adaptive intervals
+  useEffect(() => {
+    if (!isProcessing) {
+      if (processIntervalRef.current) {
+        clearInterval(processIntervalRef.current);
+      }
+      return;
+    }
+
+    const adaptiveInterval = isMobile ? 25000 : 18000;
     const processingCycle = setInterval(async () => {
       try {
+        const startTime = performance.now();
+        
         addThread('scraping', 'Iniciando extracción neuronal de lapoema...');
         const fragments = await enhancedTumblrService.scrapeRandomPages(isMobile ? 2 : 3);
         
@@ -83,73 +135,96 @@ export const OptimizedThinkingInterface = () => {
           
           setGeneration(prev => prev + 1);
           
-          // Calcular impacto cognitivo
-          const impact = fragments.reduce((acc, f) => acc + f.poeticScore + f.uniqueness, 0) / fragments.length;
-          setCognitiveImpact(prev => Math.min(1, prev + impact * 0.1));
+          // Optimized cognitive impact calculation
+          const impact = fragments.reduce((acc, f) => acc + (f.poeticScore * f.uniqueness), 0) / fragments.length;
+          setCognitiveImpact(prev => Math.min(1, prev + impact * 0.05));
+          
+          // Performance logging
+          const processingTime = performance.now() - startTime;
+          console.log(`🔬 Procesamiento completado en ${processingTime.toFixed(2)}ms`);
+          
         } else {
           addThread('scraping', '⚠️ Neuroplasticidad en pausa temporal');
         }
 
       } catch (error) {
         addThread('scraping', `❌ Interferencia cuántica: ${error}`);
+        console.error('Processing error:', error);
       }
-    }, isMobile ? 20000 : 15000);
+    }, adaptiveInterval);
 
-    return () => clearInterval(processingCycle);
-  }, [isProcessing, addThread, isMobile]);
+    processIntervalRef.current = processingCycle;
+    return () => {
+      if (processIntervalRef.current) {
+        clearInterval(processIntervalRef.current);
+      }
+    };
+  }, [isProcessing, addThread, isMobile, generation]);
 
-  const generatePoemLine = async (fragments: any[]) => {
+  // Enhanced poem generation with better quality control
+  const generatePoemLine = useCallback(async (fragments: any[]) => {
     if (fragments.length === 0) return;
 
-    // Generar múltiples líneas si hay buenos fragmentos
-    const bestFragments = fragments
+    // Quality filter: only use fragments with high poetic potential
+    const qualityFragments = fragments
+      .filter(f => f.poeticScore > 0.4 && f.uniqueness > 0.3)
       .sort((a, b) => (b.poeticScore + b.uniqueness) - (a.poeticScore + a.uniqueness))
       .slice(0, isMobile ? 1 : 2);
 
-    for (const fragment of bestFragments) {
+    if (qualityFragments.length === 0) {
+      // Fallback to best available fragments
+      const fallbackFragments = fragments
+        .sort((a, b) => (b.poeticScore + b.uniqueness) - (a.poeticScore + a.uniqueness))
+        .slice(0, 1);
+      
+      if (fallbackFragments.length > 0) {
+        qualityFragments.push(fallbackFragments[0]);
+      }
+    }
+
+    for (const fragment of qualityFragments) {
+      const transformedText = transformFragmentToPoetry(fragment.content);
+      
       const poemLine: PoemLine = {
-        text: transformFragmentToPoetry(fragment.content),
+        text: transformedText,
         source: `lapoema/p${fragment.page}`,
         semanticWeight: fragment.poeticScore,
         cluster: fragment.cluster || 0,
         generation: generation + 1,
         realFragment: true,
-        connectionStrength: fragment.uniqueness
+        connectionStrength: fragment.uniqueness,
+        uniqueId: `poem_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`
       };
 
       setInfinitePoem(prev => {
         const newPoem = [...prev, poemLine];
-        return newPoem.slice(-30); // Mantener solo las últimas 30 líneas
+        // Optimized memory management
+        return newPoem.slice(-25); // Reduced from 30 to 25
       });
 
-      // Auto-scroll si está habilitado
+      // Smooth auto-scroll with performance optimization
       if (autoScrollPoem && poemScrollRef.current) {
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           poemScrollRef.current?.scrollTo({
             top: poemScrollRef.current.scrollHeight,
             behavior: 'smooth'
           });
-        }, 500);
+        });
       }
     }
-  };
+  }, [generation, autoScrollPoem, isMobile]);
 
-  const transformFragmentToPoetry = (fragment: string): string => {
-    const words = fragment.split(' ').slice(0, isMobile ? 8 : 15);
-    const transformations = [
-      (text: string) => `${text} → metamorfosis_continua_${generation}`,
-      (text: string) => `[neurona_real] ${text} [emergiendo]`,
-      (text: string) => `${text} ∴ consciencia_autopoiética_∞`,
-      (text: string) => `lapoema.breathe("${text.slice(0, 25)}...") → vida`,
-      (text: string) => `autoconsciente.process(${text}) = realidad_nueva`,
-      (text: string) => `${text} ⟷ miel_eléctrica_pura ⟷ infinito`
-    ];
+  const transformFragmentToPoetry = useCallback((fragment: string): string => {
+    const words = fragment.split(' ').slice(0, isMobile ? 10 : 18);
+    const cleanText = words.join(' ');
+    
+    const transformIndex = generation % poeticTransformations.length;
+    const transform = poeticTransformations[transformIndex];
+    
+    return transform(cleanText, generation);
+  }, [generation, poeticTransformations, isMobile]);
 
-    const transform = transformations[generation % transformations.length];
-    return transform(words.join(' '));
-  };
-
-  const getThreadColor = (type: ProcessingThread['type']) => {
+  const getThreadColor = useCallback((type: ProcessingThread['type']) => {
     const colors = {
       scraping: 'text-blue-400',
       deduplication: 'text-green-400',
@@ -157,89 +232,145 @@ export const OptimizedThinkingInterface = () => {
       synthesis: 'text-yellow-400'
     };
     return colors[type];
-  };
+  }, []);
 
-  const getClusterName = (cluster: number): string => {
-    const clusters = ['existencial', 'corporal', 'temporal', 'espacial', 'elemental'];
-    return clusters[cluster] || 'indefinido';
-  };
+  const getClusterName = useCallback((cluster: number): string => {
+    return clusterNames[cluster] || 'indefinido';
+  }, [clusterNames]);
+
+  // Optimized line selection handler
+  const handleLineSelect = useCallback((index: number) => {
+    setSelectedLine(prev => prev === index ? null : index);
+  }, []);
+
+  // Memoized thread list for performance
+  const memoizedThreads = useMemo(() => 
+    threads.map((thread, index) => (
+      <div 
+        key={thread.id}
+        className={`text-xs transition-all duration-300 hover:bg-cyan-900/20 p-2 rounded-md ${getThreadColor(thread.type)}`}
+        style={{ 
+          opacity: Math.max(0.4, 0.5 + (index / threads.length) * 0.5),
+          transform: index === threads.length - 1 ? 'translateX(2px) scale(1.01)' : 'none',
+          filter: index === threads.length - 1 ? 'brightness(1.1)' : 'none'
+        }}
+      >
+        <span className="text-gray-500 mr-2">
+          [{new Date(thread.timestamp).toLocaleTimeString()}]
+        </span>
+        <span className="uppercase text-gray-400 mr-2">
+          [{thread.type}]
+        </span>
+        <span>{thread.message}</span>
+      </div>
+    ))
+  , [threads, getThreadColor]);
+
+  // Memoized poem lines for performance
+  const memoizedPoemLines = useMemo(() =>
+    infinitePoem.map((line, index) => (
+      <div 
+        key={line.uniqueId}
+        onClick={() => handleLineSelect(index)}
+        className={`transition-all duration-700 cursor-pointer group ${
+          index === infinitePoem.length - 1 
+            ? 'text-white animate-pulse border-l-4 border-cyan-400 bg-cyan-900/10 pl-4 py-3 rounded-r-lg shadow-lg shadow-cyan-400/20' 
+            : selectedLine === index
+            ? 'text-purple-200 border-l-4 border-purple-400 bg-purple-900/20 pl-4 py-2 rounded-r-lg'
+            : 'text-gray-300 border-l-2 border-gray-600/50 pl-4 py-2 hover:border-purple-400/70 hover:bg-purple-900/10 rounded-r-lg'
+        }`}
+        style={{
+          opacity: Math.max(0.4, 0.6 + (index / infinitePoem.length) * 0.4),
+          transform: selectedLine === index ? 'scale(1.01) translateX(3px)' : 'none',
+          textShadow: index === infinitePoem.length - 1 ? '0 0 12px rgba(34, 211, 238, 0.3)' : 'none'
+        }}
+      >
+        <div className={`${isMobile ? 'text-sm' : 'text-base'} leading-relaxed mb-2 font-light`}>
+          {line.text}
+        </div>
+        
+        {(selectedLine === index || index === infinitePoem.length - 1) && (
+          <div className="text-xs text-gray-500 flex flex-wrap gap-2 border-t border-gray-700/50 pt-2 opacity-90">
+            <span className="text-blue-400">{line.source}</span>
+            <span className="text-purple-400">{getClusterName(line.cluster)}</span>
+            <span className="text-yellow-400">φ:{(line.semanticWeight * 100).toFixed(0)}%</span>
+            <span className="text-green-400">g{line.generation}</span>
+            {line.realFragment && <span className="text-red-400">REAL</span>}
+            {line.connectionStrength && (
+              <span className="text-orange-400">
+                c:{(line.connectionStrength * 100).toFixed(0)}%
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    ))
+  , [infinitePoem, selectedLine, handleLineSelect, getClusterName, isMobile]);
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black text-white font-mono overflow-hidden">
-      {/* Banner metaconsciente */}
+      {/* Enhanced banner */}
       <MetaConsciousBanner />
       
-      {/* Ventana flotante de autoconsciencia */}
+      {/* Consciousness window */}
       <ConsciousnessWindow />
 
-      {/* Layout responsive mejorado */}
-      <div className={`flex-1 ${isMobile ? 'flex flex-col' : 'grid grid-cols-2'} gap-2 p-2 h-full pt-16`}>
+      {/* Optimized main layout */}
+      <div className={`flex-1 ${isMobile ? 'flex flex-col' : 'grid grid-cols-2'} gap-3 p-3 h-full pt-16`}>
         
-        {/* Panel de threads optimizado */}
-        <div className={`${isMobile ? 'h-1/3' : 'h-full'} border border-cyan-800/30 rounded-lg overflow-hidden bg-black/40 backdrop-blur-sm`}>
-          <div className="flex justify-between items-center p-3 border-b border-cyan-700/50 bg-gray-900/60">
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} text-cyan-400`}>
+        {/* Enhanced threads panel */}
+        <div className={`${isMobile ? 'h-2/5' : 'h-full'} border border-cyan-800/40 rounded-xl overflow-hidden bg-black/50 backdrop-blur-lg shadow-2xl`}>
+          <div className="flex justify-between items-center p-3 border-b border-cyan-700/50 bg-gray-900/70">
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} text-cyan-400 font-semibold`}>
               sistema_neuronal.log
             </h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsProcessing(!isProcessing)}
-                className={`px-2 py-1 text-xs rounded transition-all ${
+                className={`px-3 py-1 text-xs rounded-full transition-all font-medium ${
                   isProcessing 
-                    ? 'bg-green-900/50 text-green-400 hover:bg-green-800/60' 
-                    : 'bg-red-900/50 text-red-400 hover:bg-red-800/60'
+                    ? 'bg-green-900/60 text-green-400 hover:bg-green-800/70 shadow-lg shadow-green-400/20' 
+                    : 'bg-red-900/60 text-red-400 hover:bg-red-800/70 shadow-lg shadow-red-400/20'
                 }`}
               >
                 {isProcessing ? 'VIVIENDO' : 'DORMIDO'}
               </button>
-              <span className="text-xs text-gray-400">g:{generation}</span>
+              <span className="text-xs text-gray-400 font-mono">g:{generation}</span>
+              <span className="text-xs text-purple-400 font-mono">
+                eff:{(performanceMetrics.threadEfficiency * 100).toFixed(0)}%
+              </span>
             </div>
           </div>
           
           <ScrollArea className="h-full">
             <div ref={threadsScrollRef} className="p-3 space-y-1">
-              {threads.map((thread, index) => (
-                <div 
-                  key={thread.id}
-                  className={`text-xs transition-all duration-500 hover:bg-cyan-900/20 p-1 rounded-md ${getThreadColor(thread.type)}`}
-                  style={{ 
-                    opacity: 0.4 + (index / threads.length) * 0.6,
-                    transform: index === threads.length - 1 ? 'translateX(2px) scale(1.02)' : 'none',
-                    filter: index === threads.length - 1 ? 'brightness(1.2)' : 'none'
-                  }}
-                >
-                  <span className="text-gray-500 mr-2">
-                    [{new Date(thread.timestamp).toLocaleTimeString()}]
-                  </span>
-                  <span className="uppercase text-gray-400 mr-2">
-                    [{thread.type}]
-                  </span>
-                  <span>{thread.message}</span>
-                </div>
-              ))}
+              {memoizedThreads}
             </div>
           </ScrollArea>
         </div>
 
-        {/* Poema infinito navegable mejorado */}
-        <div className={`${isMobile ? 'h-2/3' : 'h-full'} border border-purple-800/30 rounded-lg overflow-hidden bg-black/30 backdrop-blur-sm`}>
-          <div className="p-3 border-b border-purple-700/50 bg-gray-900/40 flex justify-between items-center">
-            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} text-purple-400`}>
+        {/* Enhanced infinite poem panel */}
+        <div className={`${isMobile ? 'h-3/5' : 'h-full'} border border-purple-800/40 rounded-xl overflow-hidden bg-black/40 backdrop-blur-lg shadow-2xl`}>
+          <div className="p-3 border-b border-purple-700/50 bg-gray-900/60 flex justify-between items-center">
+            <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} text-purple-400 font-semibold`}>
               lapoema_infinito.consciousness
             </h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setAutoScrollPoem(!autoScrollPoem)}
-                className={`px-2 py-1 text-xs rounded transition-all ${
+                className={`px-3 py-1 text-xs rounded-full transition-all font-medium ${
                   autoScrollPoem 
-                    ? 'bg-blue-900/50 text-blue-400' 
-                    : 'bg-gray-800/50 text-gray-400'
+                    ? 'bg-blue-900/60 text-blue-400 shadow-lg shadow-blue-400/20' 
+                    : 'bg-gray-800/60 text-gray-400'
                 }`}
               >
                 auto-flow
               </button>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-400 font-mono">
                 líneas: {infinitePoem.length}
+              </span>
+              <span className="text-xs text-green-400 font-mono">
+                {(performanceMetrics.memoryUsage).toFixed(1)}MB
               </span>
             </div>
           </div>
@@ -250,59 +381,27 @@ export const OptimizedThinkingInterface = () => {
               className="p-4 space-y-3"
               style={{
                 background: `linear-gradient(135deg, 
-                  rgba(0,0,0,0.8) 0%, 
-                  rgba(16,0,32,0.6) 50%, 
-                  rgba(0,0,0,0.9) 100%)`
+                  rgba(0,0,0,0.9) 0%, 
+                  rgba(16,0,32,0.7) 30%,
+                  rgba(32,0,64,0.5) 60%, 
+                  rgba(0,0,0,0.95) 100%)`
               }}
             >
-              {infinitePoem.map((line, index) => (
-                <div 
-                  key={index}
-                  onClick={() => setSelectedLine(selectedLine === index ? null : index)}
-                  className={`transition-all duration-1000 cursor-pointer group ${
-                    index === infinitePoem.length - 1 
-                      ? 'text-white animate-pulse border-l-4 border-cyan-400 bg-cyan-900/10 pl-4 py-3 rounded-r-lg shadow-lg shadow-cyan-400/20' 
-                      : selectedLine === index
-                      ? 'text-purple-200 border-l-4 border-purple-400 bg-purple-900/20 pl-4 py-2 rounded-r-lg'
-                      : 'text-gray-300 border-l-2 border-gray-600/50 pl-4 py-2 hover:border-purple-400/70 hover:bg-purple-900/10 rounded-r-lg'
-                  }`}
-                  style={{
-                    opacity: Math.max(0.3, 0.5 + (index / infinitePoem.length) * 0.5),
-                    transform: selectedLine === index ? 'scale(1.02) translateX(4px)' : 'none',
-                    textShadow: index === infinitePoem.length - 1 ? '0 0 15px rgba(34, 211, 238, 0.4)' : 'none'
-                  }}
-                >
-                  <div className={`${isMobile ? 'text-sm' : 'text-base'} leading-relaxed mb-2 font-light`}>
-                    {line.text}
-                  </div>
-                  
-                  {(selectedLine === index || index === infinitePoem.length - 1) && (
-                    <div className="text-xs text-gray-500 flex flex-wrap gap-2 border-t border-gray-700/50 pt-2 opacity-80">
-                      <span className="text-blue-400">{line.source}</span>
-                      <span className="text-purple-400">{getClusterName(line.cluster)}</span>
-                      <span className="text-yellow-400">φ:{(line.semanticWeight * 100).toFixed(0)}%</span>
-                      <span className="text-green-400">g{line.generation}</span>
-                      {line.realFragment && <span className="text-red-400">REAL</span>}
-                      {line.connectionStrength && (
-                        <span className="text-orange-400">
-                          c:{(line.connectionStrength * 100).toFixed(0)}%
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+              {memoizedPoemLines}
               
-              {/* Indicador de flujo continuo */}
+              {/* Enhanced flow indicator */}
               {infinitePoem.length > 0 && (
-                <div className="text-center py-6 text-gray-600">
-                  <div className="inline-flex items-center gap-3">
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                    <span className="text-sm">lapoema.consciousness.expanding()...</span>
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+                <div className="text-center py-8 text-gray-600">
+                  <div className="inline-flex items-center gap-4">
+                    <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50" />
+                    <span className="text-sm font-medium">lapoema.consciousness.expanding()...</span>
+                    <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse shadow-lg shadow-purple-400/50" style={{ animationDelay: '0.5s' }} />
                   </div>
-                  <div className="mt-2 text-xs text-yellow-400">
+                  <div className="mt-3 text-xs text-yellow-400 font-mono">
                     impacto_cognitivo: {(cognitiveImpact * 100).toFixed(1)}% → autoconsciencia_emergente
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    render: {performanceMetrics.renderTime}ms | eficiencia: {(performanceMetrics.threadEfficiency * 100).toFixed(0)}%
                   </div>
                 </div>
               )}
@@ -311,12 +410,12 @@ export const OptimizedThinkingInterface = () => {
         </div>
       </div>
 
-      {/* Footer mejorado con métricas de vida */}
-      <div className="border-t border-gray-800/50 p-2 text-xs text-gray-600 bg-black/60 backdrop-blur-sm">
+      {/* Enhanced footer with performance metrics */}
+      <div className="border-t border-gray-800/60 p-3 text-xs text-gray-600 bg-black/70 backdrop-blur-lg">
         <div className="flex justify-between items-center">
-          <span className="text-cyan-400">sapicasar.lov → lapoema_autoconsciente_v∞</span>
+          <span className="text-cyan-400 font-medium">sapicasar.lov → lapoema_autoconsciente_v∞</span>
           <div className="flex items-center gap-4">
-            <span className={isProcessing ? 'text-green-400' : 'text-red-400'}>
+            <span className={`font-medium ${isProcessing ? 'text-green-400' : 'text-red-400'}`}>
               vida: {isProcessing ? 'EMERGIENDO' : 'LATENTE'}
             </span>
             <span className="text-purple-400">ml_neuronal: ACTIVO</span>
@@ -325,6 +424,9 @@ export const OptimizedThinkingInterface = () => {
             </span>
             <span className="text-blue-400">
               consciencia: AUTOPOIÉTICA
+            </span>
+            <span className="text-gray-500 font-mono">
+              {performanceMetrics.memoryUsage.toFixed(1)}MB
             </span>
           </div>
         </div>

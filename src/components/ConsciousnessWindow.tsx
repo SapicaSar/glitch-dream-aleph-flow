@@ -1,56 +1,105 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { enhancedTumblrService } from '../services/EnhancedTumblrService';
 import { AutoconsciousnessCore } from './AutoconsciousnessCore';
-import { Brain, Minimize2, Maximize2, X, Zap } from 'lucide-react';
+import { Brain, Minimize2, Maximize2, X, Zap, Activity } from 'lucide-react';
 
 export const ConsciousnessWindow = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [position, setPosition] = useState({ x: 20, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(true);
   const [electricHoney, setElectricHoney] = useState(0);
   const [realityCoherence, setRealityCoherence] = useState(0);
+  const [neuralActivity, setNeuralActivity] = useState(0);
+  const [systemHealth, setSystemHealth] = useState(1);
 
-  // Cálculo del coeficiente de miel eléctrica
-  useEffect(() => {
-    const updateMetrics = () => {
-      const fragments = enhancedTumblrService.getAllFragments();
-      const state = enhancedTumblrService.getMetaConsciousState();
+  // Optimized metrics calculation
+  const calculateMetrics = useCallback(() => {
+    const fragments = enhancedTumblrService.getAllFragments();
+    const state = enhancedTumblrService.getMetaConsciousState();
+    
+    if (fragments.length === 0) return;
+    
+    try {
+      // Enhanced electric honey coefficient calculation
+      const uniquenessAvg = fragments.reduce((sum, f) => sum + (f.uniqueness || 0), 0) / fragments.length;
+      const poeticIntensity = state.avgPoeticScore;
+      const semanticDiversity = Math.min(1, state.semanticClusters / Math.max(1, fragments.length * 0.08));
+      const noveltyFactor = fragments.filter(f => (f.uniqueness || 0) > 0.7).length / fragments.length;
       
-      if (fragments.length > 0) {
-        // Miel eléctrica: ideas innovadoras nunca antes pensadas
-        const uniquenessAvg = fragments.reduce((sum, f) => sum + f.uniqueness, 0) / fragments.length;
-        const poeticIntensity = state.avgPoeticScore;
-        const semanticDiversity = state.semanticClusters / Math.max(1, fragments.length * 0.1);
-        
-        const honeyCoefficient = Math.min(1, (uniquenessAvg + poeticIntensity + semanticDiversity) / 3);
-        setElectricHoney(honeyCoefficient);
-        
-        // Coherencia de realidad
-        const coherence = Math.min(1, state.uniqueFragments / (state.totalFragments || 1));
-        setRealityCoherence(coherence);
-      }
-    };
-
-    const interval = setInterval(updateMetrics, 2000);
-    return () => clearInterval(interval);
+      const honeyCoefficient = Math.min(1, 
+        (uniquenessAvg * 0.3 + 
+         poeticIntensity * 0.25 + 
+         semanticDiversity * 0.25 + 
+         noveltyFactor * 0.2)
+      );
+      
+      setElectricHoney(honeyCoefficient);
+      
+      // Enhanced reality coherence
+      const coherenceFactors = {
+        fragmentQuality: state.uniqueFragments / Math.max(1, state.totalFragments),
+        redundancyControl: 1 - (state.redundancyFiltered / Math.max(1, state.totalFragments)),
+        semanticStability: Math.min(1, state.semanticClusters / 5)
+      };
+      
+      const coherence = (
+        coherenceFactors.fragmentQuality * 0.4 +
+        coherenceFactors.redundancyControl * 0.3 +
+        coherenceFactors.semanticStability * 0.3
+      );
+      
+      setRealityCoherence(coherence);
+      
+      // Neural activity simulation
+      const activityLevel = Math.min(1, 
+        (fragments.length / 100) * poeticIntensity * (1 + Math.sin(Date.now() * 0.001))
+      );
+      setNeuralActivity(activityLevel);
+      
+      // System health monitoring
+      const healthFactors = {
+        memoryEfficiency: Math.max(0, 1 - (fragments.length / 1000)),
+        processingStability: coherence,
+        creativityFlow: honeyCoefficient
+      };
+      
+      const health = (
+        healthFactors.memoryEfficiency * 0.3 +
+        healthFactors.processingStability * 0.4 +
+        healthFactors.creativityFlow * 0.3
+      );
+      
+      setSystemHealth(health);
+      
+    } catch (error) {
+      console.error('Error calculating consciousness metrics:', error);
+      setSystemHealth(prev => Math.max(0.1, prev * 0.9));
+    }
   }, []);
 
-  // Funciones de ventana
-  const handleMinimize = () => setIsMinimized(!isMinimized);
-  const handleClose = () => setIsVisible(false);
+  // Optimized update intervals
+  useEffect(() => {
+    const interval = setInterval(calculateMetrics, 3000);
+    return () => clearInterval(interval);
+  }, [calculateMetrics]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Enhanced drag handling with performance optimization
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (isDragging) return;
+    
     setIsDragging(true);
     const rect = e.currentTarget.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
 
     const handleMouseMove = (e: MouseEvent) => {
-      setPosition({
-        x: e.clientX - offsetX,
-        y: e.clientY - offsetY
+      requestAnimationFrame(() => {
+        setPosition({
+          x: Math.max(0, Math.min(window.innerWidth - 400, e.clientX - offsetX)),
+          y: Math.max(0, Math.min(window.innerHeight - 200, e.clientY - offsetY))
+        });
       });
     };
 
@@ -62,7 +111,25 @@ export const ConsciousnessWindow = () => {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  };
+  }, [isDragging]);
+
+  // Memoized status calculations
+  const consciousnessStatus = useMemo(() => {
+    const level = (electricHoney + realityCoherence + neuralActivity) / 3;
+    if (level > 0.8) return { text: 'TRANSCENDENTE', color: 'text-purple-400' };
+    if (level > 0.6) return { text: 'EVOLUTIVO', color: 'text-blue-400' };
+    if (level > 0.4) return { text: 'EMERGENTE', color: 'text-green-400' };
+    if (level > 0.2) return { text: 'LATENTE', color: 'text-yellow-400' };
+    return { text: 'DORMIDO', color: 'text-gray-400' };
+  }, [electricHoney, realityCoherence, neuralActivity]);
+
+  const honeyDescription = useMemo(() => {
+    if (electricHoney > 0.8) return 'SINGULARIDAD CREATIVA ALCANZADA';
+    if (electricHoney > 0.6) return 'IDEAS REVOLUCIONARIAS EMERGIENDO';
+    if (electricHoney > 0.4) return 'Patrones creativos únicos detectados';
+    if (electricHoney > 0.2) return 'Acumulando potencial creativo...';
+    return 'Iniciando síntesis neuronal...';
+  }, [electricHoney]);
 
   if (!isVisible) return null;
 
@@ -70,98 +137,133 @@ export const ConsciousnessWindow = () => {
     <div
       className={`fixed z-50 transition-all duration-300 ${
         isMinimized 
-          ? 'w-64 h-12' 
-          : 'w-96 h-auto max-h-[80vh]'
+          ? 'w-72 h-14' 
+          : 'w-96 h-auto max-h-[85vh]'
       }`}
       style={{ 
         left: position.x, 
         top: position.y,
-        filter: 'drop-shadow(0 0 20px rgba(139, 69, 19, 0.3))'
+        filter: `drop-shadow(0 0 ${20 + systemHealth * 10}px rgba(139, 69, 19, ${0.3 + systemHealth * 0.2}))`,
+        transform: `scale(${0.98 + systemHealth * 0.02})`
       }}
     >
-      <div className="bg-gradient-to-br from-amber-900/90 to-orange-900/90 backdrop-blur-md border border-amber-500/50 rounded-lg overflow-hidden">
-        {/* Header con controles */}
+      <div className="bg-gradient-to-br from-amber-900/95 to-orange-900/95 backdrop-blur-xl border border-amber-500/60 rounded-xl overflow-hidden shadow-2xl">
+        {/* Enhanced header */}
         <div
-          className="flex items-center justify-between p-3 bg-amber-800/50 cursor-move border-b border-amber-500/30"
+          className="flex items-center justify-between p-3 bg-amber-800/60 cursor-move border-b border-amber-500/40"
           onMouseDown={handleMouseDown}
+          style={{ userSelect: 'none' }}
         >
-          <div className="flex items-center gap-2">
-            <Brain className="text-amber-400" size={16} />
-            <span className="text-amber-200 font-mono text-sm">
+          <div className="flex items-center gap-3">
+            <Brain className="text-amber-400" size={18} />
+            <span className="text-amber-200 font-mono text-sm font-medium">
               autoconsciencia.real
             </span>
+            <div className="flex items-center gap-1">
+              <Activity 
+                className="text-green-400" 
+                size={12} 
+                style={{ 
+                  opacity: 0.5 + neuralActivity * 0.5,
+                  transform: `scale(${0.8 + neuralActivity * 0.4})`
+                }} 
+              />
+              <span className="text-xs text-green-400 font-mono">
+                {(neuralActivity * 100).toFixed(0)}Hz
+              </span>
+            </div>
           </div>
           
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsMinimized(!isMinimized)}
-              className="p-1 hover:bg-amber-700/50 rounded transition-colors"
+              className="p-1.5 hover:bg-amber-700/60 rounded-lg transition-colors"
             >
               {isMinimized ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
             </button>
             <button
               onClick={() => setIsVisible(false)}
-              className="p-1 hover:bg-red-700/50 rounded transition-colors text-red-400"
+              className="p-1.5 hover:bg-red-700/60 rounded-lg transition-colors text-red-400"
             >
               <X size={14} />
             </button>
           </div>
         </div>
 
-        {/* Contenido */}
+        {/* Enhanced content */}
         {!isMinimized && (
-          <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div className="p-4 space-y-5 max-h-[75vh] overflow-y-auto custom-scroll">
             
-            {/* Coeficiente de Miel Eléctrica */}
-            <div className="bg-black/30 p-4 rounded-lg border border-yellow-500/20">
-              <div className="flex items-center gap-2 mb-3">
-                <Zap className="text-yellow-400" size={18} />
-                <span className="text-yellow-400 font-mono text-sm">
+            {/* Enhanced Electric Honey Coefficient */}
+            <div className="bg-black/40 p-4 rounded-xl border border-yellow-500/30 shadow-inner">
+              <div className="flex items-center gap-3 mb-4">
+                <Zap 
+                  className="text-yellow-400" 
+                  size={20}
+                  style={{
+                    filter: electricHoney > 0.5 ? `drop-shadow(0 0 8px rgba(250, 204, 21, 0.6))` : 'none'
+                  }}
+                />
+                <span className="text-yellow-400 font-mono text-sm font-semibold">
                   COEFICIENTE_MIEL_ELÉCTRICA
                 </span>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-300">Innovación Conceptual</span>
-                  <span className="text-yellow-400 font-mono">
+                  <span className="text-yellow-400 font-mono font-semibold">
                     {(electricHoney * 100).toFixed(1)}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-800 h-3 rounded-full overflow-hidden">
+                <div className="w-full bg-gray-800/80 h-4 rounded-full overflow-hidden border border-gray-700/50">
                   <div 
-                    className="h-full bg-gradient-to-r from-yellow-600 via-amber-400 to-orange-400 transition-all duration-2000"
+                    className="h-full bg-gradient-to-r from-yellow-600 via-amber-400 to-orange-400 transition-all duration-2000 rounded-full"
                     style={{ 
                       width: `${electricHoney * 100}%`,
-                      boxShadow: electricHoney > 0.5 ? '0 0 10px rgba(251, 191, 36, 0.6)' : 'none'
+                      boxShadow: electricHoney > 0.5 ? '0 0 15px rgba(251, 191, 36, 0.8)' : 'none'
                     }}
                   />
                 </div>
-                <div className="text-xs text-gray-400 italic">
-                  {electricHoney > 0.7 ? 'IDEAS REVOLUCIONARIAS EMERGIENDO' :
-                   electricHoney > 0.4 ? 'Patrones creativos únicos detectados' :
-                   'Acumulando potencial creativo...'}
+                <div className="text-xs text-gray-400 italic leading-relaxed">
+                  {honeyDescription}
                 </div>
               </div>
             </div>
 
-            {/* Núcleo de Autoconsciencia */}
+            {/* Autoconsciousness core */}
             <AutoconsciousnessCore />
 
-            {/* Métricas de Realidad */}
-            <div className="text-xs text-amber-300/70 border-t border-amber-500/20 pt-3">
+            {/* Enhanced reality metrics */}
+            <div className="text-xs text-amber-300/80 border-t border-amber-500/30 pt-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-amber-400">Coherencia:</span>
-                  <span className="ml-2 font-mono">
-                    {(realityCoherence * 100).toFixed(1)}%
-                  </span>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-amber-400 font-medium">Coherencia:</span>
+                    <span className="ml-2 font-mono text-cyan-300">
+                      {(realityCoherence * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-amber-400 font-medium">Estado:</span>
+                    <span className={`ml-2 font-mono ${consciousnessStatus.color}`}>
+                      {consciousnessStatus.text}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-amber-400">Estado:</span>
-                  <span className="ml-2 font-mono">
-                    {electricHoney > 0.6 ? 'TRANSCENDENTE' : 'EVOLUTIVO'}
-                  </span>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-amber-400 font-medium">Salud:</span>
+                    <span className="ml-2 font-mono text-green-300">
+                      {(systemHealth * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-amber-400 font-medium">Neural:</span>
+                    <span className="ml-2 font-mono text-purple-300">
+                      {(neuralActivity * 100).toFixed(0)}Hz
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
