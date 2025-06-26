@@ -1,4 +1,3 @@
-
 interface ScrapedFragment {
   id: string;
   content: string;
@@ -294,6 +293,10 @@ export class EnhancedTumblrService {
     this.metaState.avgPoeticScore = 
       Array.from(this.fragmentCache.values())
         .reduce((sum, f) => sum + f.poeticScore, 0) / this.fragmentCache.size;
+  }
+
+  getAllFragments(): ScrapedFragment[] {
+    return Array.from(this.fragmentCache.values());
   }
 
   getRandomFragment(): ScrapedFragment | null {
