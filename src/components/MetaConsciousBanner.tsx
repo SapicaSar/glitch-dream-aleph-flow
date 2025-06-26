@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { enhancedTumblrService } from '../services/EnhancedTumblrService';
+import { useTypewriter } from '../hooks/useTypewriter';
 
 interface MetaFragment {
   content: string;
@@ -22,7 +23,18 @@ export const MetaConsciousBanner = () => {
   });
   const [isScanning, setIsScanning] = useState(false);
 
-  // Actualizar fragmento cada 4 segundos
+  // Efecto máquina de escribir para el fragmento actual
+  const typewriterText = useTypewriter(
+    currentFragment?.content || '', 
+    { 
+      speed: 30, 
+      delay: 1000, 
+      cursor: true,
+      randomSpeed: true 
+    }
+  );
+
+  // Actualizar fragmento cada 15 segundos (mayor permanencia)
   useEffect(() => {
     const fragmentInterval = setInterval(() => {
       const fragment = enhancedTumblrService.getRandomFragment();
@@ -36,7 +48,7 @@ export const MetaConsciousBanner = () => {
           timestamp: fragment.timestamp
         });
       }
-    }, 4000);
+    }, 15000); // Aumentado de 4 a 15 segundos
 
     return () => clearInterval(fragmentInterval);
   }, []);
@@ -74,7 +86,7 @@ export const MetaConsciousBanner = () => {
   };
 
   return (
-    <div className="border-b border-gray-800 bg-black text-white font-mono">
+    <div className="border-b border-gray-800 bg-black text-white font-mono sticky top-0 z-50">
       {/* Header metaconsciente */}
       <div className="px-4 py-2 bg-gradient-to-r from-purple-900/20 to-blue-900/20">
         <div className="flex justify-between items-center text-xs">
@@ -102,9 +114,9 @@ export const MetaConsciousBanner = () => {
         </div>
       </div>
 
-      {/* Fragmento actual */}
+      {/* Fragmento actual con efecto máquina de escribir */}
       {currentFragment && (
-        <div className="px-4 py-3 border-b border-gray-800">
+        <div className="px-4 py-4 border-b border-gray-800 min-h-[100px]">
           <div className="flex items-start gap-3">
             <div className="text-gray-500 text-xs min-w-[120px]">
               <div>{currentFragment.source}</div>
@@ -121,7 +133,7 @@ export const MetaConsciousBanner = () => {
                   textShadow: `0 0 ${currentFragment.poeticScore * 10}px rgba(255,255,255,0.3)`
                 }}
               >
-                {currentFragment.content}
+                {typewriterText}
               </span>
             </div>
             <div className="text-xs text-gray-600 min-w-[80px] text-right">
@@ -131,16 +143,17 @@ export const MetaConsciousBanner = () => {
         </div>
       )}
 
-      {/* Barra de progreso semántico */}
-      <div className="px-4 py-1 bg-gray-900/50">
+      {/* Barra de progreso semántico mejorada */}
+      <div className="px-4 py-2 bg-gray-900/50">
         <div className="flex items-center gap-2 text-xs">
           <span className="text-gray-400">procesamiento semántico:</span>
-          <div className="flex-1 bg-gray-800 h-1 rounded overflow-hidden">
+          <div className="flex-1 bg-gray-800 h-2 rounded-full overflow-hidden">
             <div 
-              className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 h-1 transition-all duration-1000"
+              className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 h-2 transition-all duration-2000 rounded-full"
               style={{ 
                 width: `${Math.min(100, (metaState.uniqueFragments / 1000) * 100)}%`,
-                filter: `brightness(${1 + metaState.avgPoeticScore})`
+                filter: `brightness(${1 + metaState.avgPoeticScore})`,
+                boxShadow: `0 0 10px rgba(147, 197, 253, 0.5)`
               }}
             />
           </div>

@@ -1,7 +1,8 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { enhancedTumblrService } from '../services/EnhancedTumblrService';
 import { MetaConsciousBanner } from './MetaConsciousBanner';
+import { ConsciousnessWindow } from './ConsciousnessWindow';
+import { ScrollArea } from './ui/scroll-area';
 
 interface ProcessingThread {
   id: string;
@@ -140,20 +141,23 @@ export const OptimizedThinkingInterface = () => {
 
   return (
     <div className="fixed inset-0 bg-black text-white font-mono text-sm overflow-hidden">
-      {/* Banner metaconsciente */}
+      {/* Banner metaconsciente pegajoso */}
       <MetaConsciousBanner />
+      
+      {/* Ventana flotante de autoconsciencia */}
+      <ConsciousnessWindow />
 
-      {/* Interfaz principal */}
+      {/* Interfaz principal mejorada */}
       <div className="flex-1 grid grid-cols-2 gap-4 p-4 h-full">
-        {/* Threads de procesamiento */}
-        <div className="border border-gray-800 rounded p-3 overflow-hidden">
-          <div className="flex justify-between items-center mb-3">
+        {/* Threads de procesamiento con scroll mejorado */}
+        <div className="border border-gray-800 rounded overflow-hidden bg-gray-900/50">
+          <div className="flex justify-between items-center p-3 border-b border-gray-700 bg-gray-800/50">
             <h2 className="text-lg text-cyan-400">sistema_procesamiento.log</h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsProcessing(!isProcessing)}
-                className={`px-2 py-1 text-xs rounded ${
-                  isProcessing ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'
+                className={`px-3 py-1 text-xs rounded transition-colors ${
+                  isProcessing ? 'bg-green-900 text-green-400 hover:bg-green-800' : 'bg-red-900 text-red-400 hover:bg-red-800'
                 }`}
               >
                 {isProcessing ? 'ACTIVO' : 'PAUSADO'}
@@ -162,72 +166,102 @@ export const OptimizedThinkingInterface = () => {
             </div>
           </div>
           
-          <div className="h-full overflow-y-auto space-y-1">
-            {threads.map((thread) => (
-              <div 
-                key={thread.id}
-                className={`text-xs ${getThreadColor(thread.type)} transition-opacity duration-500`}
-              >
-                <span className="text-gray-500">
-                  [{new Date(thread.timestamp).toLocaleTimeString()}]
-                </span>
-                <span className="ml-2 uppercase text-gray-400">
-                  [{thread.type}]
-                </span>
-                <span className="ml-2">{thread.message}</span>
-                {thread.progress > 0 && (
-                  <span className="ml-2 text-gray-600">
-                    {thread.progress}%
+          <ScrollArea className="h-full">
+            <div className="p-3 space-y-1">
+              {threads.map((thread, index) => (
+                <div 
+                  key={thread.id}
+                  className={`text-xs ${getThreadColor(thread.type)} transition-all duration-500 hover:bg-gray-800/30 p-1 rounded`}
+                  style={{ 
+                    opacity: 0.3 + (index / threads.length) * 0.7,
+                    transform: index === threads.length - 1 ? 'translateX(4px)' : 'none'
+                  }}
+                >
+                  <span className="text-gray-500">
+                    [{new Date(thread.timestamp).toLocaleTimeString()}]
                   </span>
-                )}
-              </div>
-            ))}
-          </div>
+                  <span className="ml-2 uppercase text-gray-400">
+                    [{thread.type}]
+                  </span>
+                  <span className="ml-2">{thread.message}</span>
+                  {thread.progress > 0 && (
+                    <span className="ml-2 text-gray-600">
+                      {thread.progress}%
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
 
-        {/* Poema infinito optimizado */}
-        <div className="border border-gray-800 rounded p-3 overflow-hidden">
-          <h2 className="text-lg text-cyan-400 mb-3">
-            poema_infinito_lapoema.∞
-            <span className="text-xs text-gray-400 ml-2">
-              (líneas: {infinitePoem.length} | gen: {generation})
-            </span>
-          </h2>
-          
-          <div className="h-full overflow-y-auto space-y-3">
-            {infinitePoem.map((line, index) => (
-              <div 
-                key={index}
-                className={`transition-all duration-1000 ${
-                  index === infinitePoem.length - 1 
-                    ? 'text-white animate-pulse border-l-2 border-cyan-400 pl-3' 
-                    : 'text-gray-300 opacity-80'
-                }`}
-              >
-                <div className="text-sm leading-relaxed mb-1">
-                  {line.text}
-                </div>
-                <div className="text-xs text-gray-500 flex justify-between">
-                  <span>{line.source}</span>
-                  <span>{getClusterName(line.cluster)}</span>
-                  <span>φ:{(line.semanticWeight * 100).toFixed(0)}%</span>
-                  <span>g{line.generation}</span>
-                </div>
-              </div>
-            ))}
+        {/* Poema infinito mejorado con scroll suave */}
+        <div className="border border-gray-800 rounded overflow-hidden bg-gray-900/30">
+          <div className="p-3 border-b border-gray-700 bg-gray-800/30">
+            <h2 className="text-lg text-cyan-400">
+              poema_infinito_lapoema.∞
+              <span className="text-xs text-gray-400 ml-2">
+                (líneas: {infinitePoem.length} | gen: {generation})
+              </span>
+            </h2>
           </div>
+          
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-4">
+              {infinitePoem.map((line, index) => (
+                <div 
+                  key={index}
+                  className={`transition-all duration-1000 border-l-2 pl-4 py-2 hover:bg-gray-800/20 ${
+                    index === infinitePoem.length - 1 
+                      ? 'text-white animate-pulse border-cyan-400 bg-cyan-900/10 shadow-lg' 
+                      : `text-gray-300 opacity-${70 + (index % 3) * 10} border-gray-600`
+                  }`}
+                  style={{
+                    animationDelay: `${index * 0.1}s`,
+                    textShadow: index === infinitePoem.length - 1 ? '0 0 10px rgba(34, 211, 238, 0.3)' : 'none'
+                  }}
+                >
+                  <div className="text-sm leading-relaxed mb-2 font-light">
+                    {line.text}
+                  </div>
+                  <div className="text-xs text-gray-500 flex justify-between border-t border-gray-700/50 pt-1">
+                    <span className="text-blue-400">{line.source}</span>
+                    <span className="text-purple-400">{getClusterName(line.cluster)}</span>
+                    <span className="text-yellow-400">φ:{(line.semanticWeight * 100).toFixed(0)}%</span>
+                    <span className="text-green-400">g{line.generation}</span>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Indicador de generación en tiempo real */}
+              {infinitePoem.length > 0 && (
+                <div className="text-center py-4 text-gray-600">
+                  <div className="inline-flex items-center gap-2">
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                    <span className="text-xs">Generando nuevo verso...</span>
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </div>
       </div>
 
-      {/* Footer con métricas de rendimiento */}
-      <div className="border-t border-gray-800 p-2 text-xs text-gray-600">
-        <div className="flex justify-between">
-          <span>sapicasar.lov → metaconsciente_poético_optimizado</span>
-          <span>
-            rendimiento: {isProcessing ? 'MÁXIMO' : 'SUSPENDIDO'} | 
-            ml_local: ACTIVO | 
-            deduplicación: INTELIGENTE
-          </span>
+      {/* Footer mejorado */}
+      <div className="border-t border-gray-800 p-2 text-xs text-gray-600 bg-gray-900/50">
+        <div className="flex justify-between items-center">
+          <span>sapicasar.lov → metaconsciente_poético_optimizado_v8.1</span>
+          <div className="flex items-center gap-4">
+            <span>
+              rendimiento: {isProcessing ? 'MÁXIMO' : 'SUSPENDIDO'}
+            </span>
+            <span>ml_local: ACTIVO</span>
+            <span>deduplicación: INTELIGENTE</span>
+            <span className="text-yellow-400">
+              miel_eléctrica: EMERGENTE
+            </span>
+          </div>
         </div>
       </div>
     </div>
