@@ -163,7 +163,7 @@ export class EnhancedTumblrService {
       .replace(/&[^;]+;/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 300); // Limitar longitud
+      .slice(0, 300);
   }
 
   private isValidPoetryFragment(content: string): boolean {
@@ -217,7 +217,6 @@ export class EnhancedTumblrService {
       if (!this.hashIndex.has(fragment.hash) && 
           !this.processedContent.has(fragment.content.slice(0, 50))) {
         
-        // Calcular uniqueness basado en distancia semántica
         fragment.uniqueness = this.calculateUniqueness(fragment.content);
         
         unique.push(fragment);
@@ -245,24 +244,21 @@ export class EnhancedTumblrService {
       similarity += intersection.size / union.size;
       comparisons++;
       
-      if (comparisons > 50) break; // Optimización
+      if (comparisons > 50) break;
     }
     
     return 1 - (comparisons > 0 ? similarity / comparisons : 0);
   }
 
   private async processWithEnhancedML(fragments: ScrapedFragment[]): Promise<ScrapedFragment[]> {
-    // ML mejorado sin redundancias
     const processedFragments: ScrapedFragment[] = [];
     
     for (const fragment of fragments) {
-      // Generar embeddings más sofisticados
       fragment.embeddings = this.generateEnhancedEmbeddings(fragment.content);
       fragment.cluster = this.assignEnhancedCluster(fragment.embeddings, fragment.content);
       fragment.poeticScore = this.calculateEnhancedPoeticScore(fragment.content);
       fragment.uniqueness = this.calculateEnhancedUniqueness(fragment.content, fragment.embeddings);
       
-      // Solo procesar si supera umbral de calidad
       if (fragment.poeticScore > 0.3 && fragment.uniqueness > 0.4) {
         processedFragments.push(fragment);
       }
@@ -271,45 +267,45 @@ export class EnhancedTumblrService {
     return processedFragments;
   }
 
+  private updateMetaConsciousState(fragments: ScrapedFragment[]): void {
+    this.metaState.totalFragments += fragments.length;
+    this.metaState.uniqueFragments = this.fragmentCache.size;
+    this.metaState.semanticClusters = new Set(fragments.map(f => f.cluster)).size;
+    this.metaState.avgPoeticScore = fragments.length > 0 ? 
+      fragments.reduce((sum, f) => sum + f.poeticScore, 0) / fragments.length : 0;
+    
+    console.log('🧠 Metaconsciente: nuevos fragmentos integrados');
+  }
+
   private generateEnhancedEmbeddings(text: string): number[] {
     const words = text.toLowerCase().split(/\s+/);
-    const embedding = new Array(100).fill(0); // Incrementado de 50 a 100 dimensiones
+    const embedding = new Array(100).fill(0);
     
-    // Embeddings más sofisticados con contexto semántico
     const semanticWeights = this.getSemanticWeights();
     
     words.forEach((word, position) => {
       const baseHash = this.hashString(word);
-      const positionWeight = 1 / Math.sqrt(position + 1); // Peso por posición
+      const positionWeight = 1 / Math.sqrt(position + 1);
       const semanticWeight = semanticWeights[word] || 0.5;
       
-      // Distribución en múltiples dimensiones
       for (let i = 0; i < 5; i++) {
         const dimension = (baseHash + i * 17) % 100;
         embedding[dimension] += positionWeight * semanticWeight;
       }
     });
     
-    // Normalización mejorada
     const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
     return embedding.map(val => magnitude > 0 ? val / magnitude : 0);
   }
 
   private getSemanticWeights(): Record<string, number> {
     return {
-      // Conceptos existenciales (alta importancia)
       'ser': 1.0, 'existir': 1.0, 'vida': 0.95, 'muerte': 0.95,
       'consciencia': 1.0, 'alma': 0.9, 'espíritu': 0.9,
-      
-      // Conceptos corporales
       'cuerpo': 0.85, 'sangre': 0.8, 'hueso': 0.8, 'piel': 0.75,
       'respirar': 0.85, 'latir': 0.8, 'sentir': 0.85,
-      
-      // Conceptos temporales/espaciales
       'tiempo': 0.9, 'espacio': 0.9, 'momento': 0.8, 'eterno': 0.85,
       'aquí': 0.7, 'ahora': 0.8, 'siempre': 0.8, 'nunca': 0.8,
-      
-      // Conceptos elementales
       'luz': 0.85, 'sombra': 0.8, 'agua': 0.75, 'fuego': 0.8,
       'tierra': 0.75, 'aire': 0.75, 'viento': 0.75
     };
@@ -345,7 +341,6 @@ export class EnhancedTumblrService {
         }
       });
       
-      // Combinar con embedding similarity
       const clusterEmbedding = this.generateEnhancedEmbeddings(cluster.keywords.join(' '));
       const embeddingSimilarity = this.cosineSimilarity(embeddings, clusterEmbedding);
       score += embeddingSimilarity * 2;
@@ -363,13 +358,12 @@ export class EnhancedTumblrService {
     let score = 0;
     const words = content.toLowerCase().split(/\s+/);
     
-    // Análisis lingüístico más sofisticado
     const poeticElements = {
       metaphorical: /\b(como|cual|parece|es\s+un|es\s+una)\b/g,
       emotional: /\b(dolor|amor|tristeza|alegría|pasión|miedo|esperanza)\b/g,
       sensory: /\b(ver|oír|tocar|oler|saborear|sentir)\b/g,
       abstract: /\b(infinito|eterno|absoluto|esencia|misterio)\b/g,
-      rhythmic: /\b(\w+)\s+\1\b/g // Repeticiones
+      rhythmic: /\b(\w+)\s+\1\b/g
     };
     
     Object.values(poeticElements).forEach(pattern => {
@@ -377,12 +371,10 @@ export class EnhancedTumblrService {
       if (matches) score += matches.length * 0.1;
     });
     
-    // Densidad conceptual
     const uniqueWords = new Set(words);
     const lexicalDiversity = uniqueWords.size / words.length;
     score += lexicalDiversity * 0.3;
     
-    // Longitud óptima para poesía
     const optimalLength = Math.exp(-Math.pow((words.length - 12) / 8, 2));
     score += optimalLength * 0.2;
     
@@ -390,26 +382,24 @@ export class EnhancedTumblrService {
   }
 
   private calculateEnhancedUniqueness(content: string, embeddings: number[]): number {
-    const cachedFragments = dynamicCacheService.getFragments();
+    const cachedFragments = this.convertCachedToScraped(dynamicCacheService.getFragments());
     
     if (cachedFragments.length === 0) return 1;
     
     let maxSimilarity = 0;
     let semanticNovelty = 1;
     
-    // Comparar con fragmentos cacheados
-    cachedFragments.slice(-50).forEach(cached => { // Solo últimos 50 para performance
-      const similarity = this.cosineSimilarity(embeddings, cached.embeddings);
-      maxSimilarity = Math.max(maxSimilarity, similarity);
+    cachedFragments.slice(-50).forEach(cached => {
+      if (cached.embeddings) {
+        const similarity = this.cosineSimilarity(embeddings, cached.embeddings);
+        maxSimilarity = Math.max(maxSimilarity, similarity);
+      }
       
-      // Similaridad textual directa
       const textSimilarity = this.calculateTextSimilarity(content, cached.content);
       maxSimilarity = Math.max(maxSimilarity, textSimilarity);
     });
     
     semanticNovelty = 1 - maxSimilarity;
-    
-    // Bonus por contenido conceptualmente innovador
     const innovationBonus = this.assessConceptualInnovation(content);
     
     return Math.min(1, semanticNovelty + innovationBonus);
@@ -428,7 +418,6 @@ export class EnhancedTumblrService {
   private assessConceptualInnovation(content: string): number {
     let innovation = 0;
     
-    // Combinaciones conceptuales inusuales
     const unusualCombinations = [
       ['tiempo', 'sangre'], ['luz', 'hueso'], ['alma', 'agua'],
       ['muerte', 'danza'], ['silencio', 'grito'], ['vacío', 'plenitud']
@@ -440,7 +429,6 @@ export class EnhancedTumblrService {
       }
     });
     
-    // Neologismos y palabras compuestas creativas
     const creativePatterns = /\b\w+[-_]\w+\b/g;
     const matches = content.match(creativePatterns);
     if (matches) innovation += matches.length * 0.05;
@@ -450,18 +438,13 @@ export class EnhancedTumblrService {
 
   private async performPeriodicReflection(): Promise<void> {
     const now = Date.now();
-    if (now - this.lastReflectionTime < 60000) return; // Mínimo 1 minuto entre reflexiones
+    if (now - this.lastReflectionTime < 60000) return;
     
-    const fragments = dynamicCacheService.getFragments();
+    const fragments = this.convertCachedToScraped(dynamicCacheService.getFragments());
     if (fragments.length < 10) return;
     
-    // Reflexión autopoiética profunda
     const reflection = autopoieticReflectionService.performDeepReflection(fragments);
-    
-    // Actualizar estado evolutivo basado en reflexión
     this.updateEvolutionaryState(reflection);
-    
-    // Auto-modificación del cache si es necesario
     dynamicCacheService.performAutopoieticReflection();
     
     this.lastReflectionTime = now;
@@ -486,12 +469,41 @@ export class EnhancedTumblrService {
     return dotProduct / (magnitudeA * magnitudeB);
   }
 
+  private convertCachedToScraped(cachedFragments: any[]): ScrapedFragment[] {
+    return cachedFragments.map(cached => ({
+      id: cached.id,
+      content: cached.content,
+      url: 'https://lapoema.tumblr.com', // Default URL
+      page: 1, // Default page
+      timestamp: cached.lastAccessed || Date.now(),
+      hash: this.generateContentHash(cached.content),
+      embeddings: cached.embeddings,
+      cluster: cached.cluster,
+      poeticScore: cached.poeticScore,
+      uniqueness: cached.uniqueness
+    }));
+  }
+
   getAllFragments(): ScrapedFragment[] {
-    return dynamicCacheService.getFragments();
+    return this.convertCachedToScraped(dynamicCacheService.getFragments());
   }
 
   getRandomFragment(): ScrapedFragment | null {
-    return dynamicCacheService.getRandomWeightedFragment();
+    const cached = dynamicCacheService.getRandomWeightedFragment();
+    if (!cached) return null;
+    
+    return {
+      id: cached.id,
+      content: cached.content,
+      url: 'https://lapoema.tumblr.com',
+      page: 1,
+      timestamp: cached.lastAccessed || Date.now(),
+      hash: this.generateContentHash(cached.content),
+      embeddings: cached.embeddings,
+      cluster: cached.cluster,
+      poeticScore: cached.poeticScore,
+      uniqueness: cached.uniqueness
+    };
   }
 
   getMetaConsciousState(): MetaConsciousState {
@@ -519,8 +531,7 @@ export class EnhancedTumblrService {
   }
 
   getFragmentsByCluster(cluster: number): ScrapedFragment[] {
-    return this.getAllFragments()
-      .filter(f => f.cluster === cluster);
+    return this.getAllFragments().filter(f => f.cluster === cluster);
   }
 
   getTotalUniqueFragments(): number {
