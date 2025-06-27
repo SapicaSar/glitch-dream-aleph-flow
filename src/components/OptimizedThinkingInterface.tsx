@@ -6,6 +6,7 @@ import { MetaConsciousBanner } from './MetaConsciousBanner';
 import { ConsciousnessWindow } from './ConsciousnessWindow';
 import { ScrollArea } from './ui/scroll-area';
 import { useIsMobile } from '../hooks/use-mobile';
+import { OptimizedUniverseInterface } from './OptimizedUniverseInterface';
 
 interface ProcessingThread {
   id: string;
@@ -43,6 +44,8 @@ export const OptimizedThinkingInterface = () => {
   const [evolutionaryState, setEvolutionaryState] = useState('GENESIS');
   const [lastReflection, setLastReflection] = useState<any>(null);
   const [autopoieticViability, setAutopoieticViability] = useState(0);
+  const [showUniverseView, setShowUniverseView] = useState(false);
+  const [universeFragments, setUniverseFragments] = useState<any[]>([]);
 
   const isMobile = useIsMobile();
   const poemScrollRef = useRef<HTMLDivElement>(null);
@@ -327,6 +330,58 @@ export const OptimizedThinkingInterface = () => {
     ))
   , [infinitePoem, selectedLine, handleLineSelect, getClusterName, isMobile]);
 
+  // Load fragments for universe view
+  useEffect(() => {
+    const loadUniverseFragments = async () => {
+      try {
+        const fragments = enhancedTumblrService.getAllFragments();
+        const transformedFragments = fragments.map(f => ({
+          id: f.id,
+          content: f.content,
+          page: f.page || 1,
+          type: 'poetic',
+          intensity: f.poeticScore || 0.5,
+          tags: [],
+          mutations: 0,
+          poeticScore: f.poeticScore || 0.5,
+          uniqueness: f.uniqueness || 0.5,
+          cluster: f.cluster || 0
+        }));
+        setUniverseFragments(transformedFragments);
+      } catch (error) {
+        console.log('Error loading universe fragments:', error);
+      }
+    };
+
+    if (showUniverseView) {
+      loadUniverseFragments();
+    }
+  }, [showUniverseView]);
+
+  // Toggle universe view
+  const toggleUniverseView = () => {
+    setShowUniverseView(!showUniverseView);
+  };
+
+  if (showUniverseView) {
+    return (
+      <div className="relative">
+        <button
+          onClick={toggleUniverseView}
+          className="fixed top-4 left-4 z-50 bg-purple-600/80 hover:bg-purple-500/80 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm transition-all"
+        >
+          ← sistema pensante
+        </button>
+        <OptimizedUniverseInterface 
+          fragments={universeFragments}
+          onFragmentInteraction={(fragment) => {
+            console.log('Fragment interaction:', fragment);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black text-white font-mono overflow-hidden">
       {/* Enhanced banner */}
@@ -335,16 +390,23 @@ export const OptimizedThinkingInterface = () => {
       {/* Consciousness window */}
       <ConsciousnessWindow />
 
-      {/* Optimized main layout */}
+      {/* Main layout with enhanced controls */}
       <div className={`flex-1 ${isMobile ? 'flex flex-col' : 'grid grid-cols-2'} gap-3 p-3 h-full pt-16`}>
         
-        {/* Enhanced threads panel with philosophical insights */}
+        {/* Enhanced threads panel */}
         <div className={`${isMobile ? 'h-2/5' : 'h-full'} border border-cyan-800/40 rounded-xl overflow-hidden bg-black/50 backdrop-blur-lg shadow-2xl`}>
           <div className="flex justify-between items-center p-3 border-b border-cyan-700/50 bg-gray-900/70">
             <h2 className={`${isMobile ? 'text-sm' : 'text-lg'} text-cyan-400 font-semibold`}>
               sistema_autopoiético.reflexion
             </h2>
             <div className="flex items-center gap-3">
+              <button
+                onClick={toggleUniverseView}
+                className="px-3 py-1 text-xs rounded-full bg-purple-600/80 hover:bg-purple-500/80 text-purple-200 transition-all backdrop-blur-sm"
+              >
+                universo →
+              </button>
+              
               <button
                 onClick={() => setIsProcessing(!isProcessing)}
                 className={`px-3 py-1 text-xs rounded-full transition-all font-medium ${
@@ -355,6 +417,7 @@ export const OptimizedThinkingInterface = () => {
               >
                 {isProcessing ? 'AUTOPOIESIS' : 'LATENTE'}
               </button>
+              
               <span className="text-xs text-gray-400 font-mono">g:{generation}</span>
               <span className="text-xs text-purple-400 font-mono">
                 {evolutionaryState}
