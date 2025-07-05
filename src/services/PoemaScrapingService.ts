@@ -1,13 +1,25 @@
-
 export interface PoemaFragment {
   id: string;
   content: string;
-  type: 'text' | 'image' | 'quote' | 'poem' | 'glitch' | 'biopoetic';
-  tags?: string[];
-  timestamp: number;
+  type: 'poema' | 'prosa' | 'glitch' | 'biopoetic' | 'meta';
   page: number;
   intensity: number;
   mutations: number;
+  tags?: string[];
+  
+  // Propiedades necesarias para la nueva interfaz optimizada
+  poeticScore: number;
+  uniqueness: number;
+  cluster?: number;
+  embeddings?: number[];
+  timestamp?: number;
+  hash?: string;
+  
+  // Propiedades blockchain-poéticas
+  blockHash?: string;
+  poeticProof?: number;
+  consensusWeight?: number;
+  sapicasarChain?: string[];
 }
 
 export class PoemaScrapingService {

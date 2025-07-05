@@ -4,9 +4,10 @@ import { PoemaFragment } from '../services/PoemaScrapingService';
 import { useGlitch } from '../contexts/GlitchContext';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useIsMobile } from '../hooks/use-mobile';
-import { ScrollArea } from './ui/scroll-area';
+import { OptimizedScrollArea } from './OptimizedScrollArea';
 import { PoetryChat } from './PoetryChat';
 import { DraggablePoetryPanel } from './DraggablePoetryPanel';
+import { BlockchainPoetryCore } from './BlockchainPoetryCore';
 
 interface OptimizedUniverseInterfaceProps {
   fragments: PoemaFragment[];
@@ -23,20 +24,34 @@ export const OptimizedUniverseInterface = ({
   const [poeticIntensity, setPoeticIntensity] = useState(0.5);
   const [showChat, setShowChat] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showBlockchain, setShowBlockchain] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
   
   const { triggerGlitch } = useGlitch();
   const isMobile = useIsMobile();
 
-  // Optimized fragment rendering with virtualization for large datasets
+  // Asegurar que todos los fragmentos tengan las propiedades necesarias
+  const normalizedFragments = useMemo(() => {
+    return fragments.map(fragment => ({
+      ...fragment,
+      poeticScore: fragment.poeticScore || Math.random() * 0.8 + 0.2,
+      uniqueness: fragment.uniqueness || Math.random() * 0.6 + 0.4,
+      cluster: fragment.cluster || Math.floor(Math.random() * 5),
+      timestamp: fragment.timestamp || Date.now(),
+      hash: fragment.hash || Math.random().toString(36).substring(7)
+    }));
+  }, [fragments]);
+
+  // Optimized fragment rendering con virtualización mejorada
   const visibleFragments = useMemo(() => {
-    return fragments
+    return normalizedFragments
       .filter(f => f.poeticScore > poeticIntensity * 0.3)
       .sort((a, b) => (b.poeticScore + b.uniqueness) - (a.poeticScore + a.uniqueness))
-      .slice(0, isMobile ? 20 : 50);
-  }, [fragments, poeticIntensity, isMobile]);
+      .slice(0, isMobile ? 15 : 40); // Reducido para mejor performance
+  }, [normalizedFragments, poeticIntensity, isMobile]);
 
   const headerText = useTypewriter(
-    "UNIVERSO.POÉTICO.OPTIMIZADO", 
+    "UNIVERSO.POÉTICO.LOVABLE", 
     { speed: 80, randomSpeed: true, cursor: true }
   );
 
@@ -45,7 +60,7 @@ export const OptimizedUniverseInterface = ({
     onFragmentInteraction(fragment);
     triggerGlitch();
     
-    // Multi-selection with Ctrl/Cmd
+    // Multi-selection mejorada
     if (window.event && (window.event as KeyboardEvent).ctrlKey) {
       setSelectedFragments(prev => {
         const newSet = new Set(prev);
@@ -59,6 +74,14 @@ export const OptimizedUniverseInterface = ({
     }
   }, [onFragmentInteraction, triggerGlitch]);
 
+  const handleBlockMined = useCallback((block: any) => {
+    console.log('🔗 Nuevo bloque poético minado:', block);
+  }, []);
+
+  const handleScroll = useCallback((scrollTop: number, scrollHeight: number) => {
+    setScrollProgress(scrollTop / scrollHeight);
+  }, []);
+
   const FragmentCard = useCallback(({ fragment, index }: { fragment: PoemaFragment; index: number }) => {
     const isSelected = selectedFragments.has(fragment.id);
     const isActive = activeFragment?.id === fragment.id;
@@ -67,7 +90,7 @@ export const OptimizedUniverseInterface = ({
       <div
         onClick={() => handleFragmentClick(fragment)}
         className={`
-          group relative p-4 rounded-xl border cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:z-10
+          group relative p-4 rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:z-10
           ${isActive 
             ? 'bg-gradient-to-br from-purple-900/60 to-cyan-900/60 border-purple-400 shadow-xl shadow-purple-400/30' 
             : isSelected
@@ -77,8 +100,8 @@ export const OptimizedUniverseInterface = ({
           backdrop-blur-sm
         `}
         style={{
-          animationDelay: `${index * 0.05}s`,
-          transform: `translateY(${Math.sin(index * 0.1) * 2}px)`,
+          animationDelay: `${index * 0.03}s`, // Reducido para mejor performance
+          transform: `translateY(${Math.sin(index * 0.1 + scrollProgress * 10) * 1}px)`, // Efecto más sutil
         }}
       >
         <div className="relative z-10">
@@ -89,23 +112,26 @@ export const OptimizedUniverseInterface = ({
                 className="w-2 h-2 rounded-full"
                 style={{
                   backgroundColor: `hsl(${fragment.intensity * 120}, 70%, 60%)`,
-                  boxShadow: `0 0 ${fragment.intensity * 6}px hsla(${fragment.intensity * 120}, 70%, 60%, 0.6)`
+                  boxShadow: `0 0 ${fragment.intensity * 4}px hsla(${fragment.intensity * 120}, 70%, 60%, 0.4)`
                 }}
               />
+              {fragment.cluster !== undefined && (
+                <span className="text-xs text-purple-300">C{fragment.cluster}</span>
+              )}
             </div>
           </div>
           
           <div className={`text-white leading-relaxed mb-3 group-hover:text-cyan-100 transition-colors ${
             isMobile ? 'text-sm' : 'text-base'
           }`}>
-            {fragment.content.length > (isMobile ? 120 : 180) 
-              ? `${fragment.content.slice(0, isMobile ? 120 : 180)}...` 
+            {fragment.content.length > (isMobile ? 100 : 150) 
+              ? `${fragment.content.slice(0, isMobile ? 100 : 150)}...` 
               : fragment.content}
           </div>
 
           {fragment.tags && (
             <div className="flex flex-wrap gap-1">
-              {fragment.tags.slice(0, isMobile ? 3 : 5).map((tag, tagIndex) => (
+              {fragment.tags.slice(0, isMobile ? 2 : 4).map((tag, tagIndex) => (
                 <span
                   key={tagIndex}
                   className="px-2 py-1 text-xs bg-purple-800/40 text-purple-200 rounded-full border border-purple-600/30"
@@ -120,26 +146,26 @@ export const OptimizedUniverseInterface = ({
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
       </div>
     );
-  }, [selectedFragments, activeFragment, handleFragmentClick, isMobile]);
+  }, [selectedFragments, activeFragment, handleFragmentClick, isMobile, scrollProgress]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-black text-white relative overflow-hidden">
-      {/* Optimized Header */}
-      <header className="relative z-20 text-center py-8 px-4">
+      {/* Header optimizado */}
+      <header className="relative z-20 text-center py-6 px-4">
         <h1 className={`font-thin tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-cyan-400 to-yellow-400 mb-4 ${
-          isMobile ? 'text-4xl' : 'text-6xl'
+          isMobile ? 'text-3xl' : 'text-5xl'
         }`}>
           {headerText}
         </h1>
         
-        <div className="flex flex-wrap justify-center gap-3 mt-6">
-          {/* View Mode Selector */}
+        <div className="flex flex-wrap justify-center gap-2 mt-4">
+          {/* Controles compactos */}
           <div className="flex bg-black/50 rounded-full p-1 backdrop-blur-sm">
             {(['grid', 'flow', 'constellation'] as const).map(mode => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
-                className={`px-4 py-2 text-xs rounded-full transition-all ${
+                className={`px-3 py-1 text-xs rounded-full transition-all ${
                   viewMode === mode 
                     ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' 
                     : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
@@ -150,9 +176,9 @@ export const OptimizedUniverseInterface = ({
             ))}
           </div>
 
-          {/* Intensity Slider */}
-          <div className="flex items-center gap-2 bg-black/50 rounded-full px-4 py-2 backdrop-blur-sm">
-            <span className="text-xs text-gray-400">intensidad:</span>
+          {/* Intensidad mejorada */}
+          <div className="flex items-center gap-2 bg-black/50 rounded-full px-3 py-1 backdrop-blur-sm">
+            <span className="text-xs text-gray-400">φ:</span>
             <input
               type="range"
               min="0"
@@ -160,39 +186,53 @@ export const OptimizedUniverseInterface = ({
               step="0.1"
               value={poeticIntensity}
               onChange={(e) => setPoeticIntensity(parseFloat(e.target.value))}
-              className="w-16 accent-purple-500"
+              className="w-12 accent-purple-500"
             />
             <span className="text-xs text-purple-400">{(poeticIntensity * 100).toFixed(0)}%</span>
           </div>
 
-          {/* Action Buttons */}
+          {/* Botones de funcionalidad */}
           <button
             onClick={() => setShowChat(!showChat)}
-            className={`px-4 py-2 text-xs rounded-full transition-all ${
+            className={`px-3 py-1 text-xs rounded-full transition-all ${
               showChat 
                 ? 'bg-green-600 text-white shadow-lg shadow-green-600/30' 
                 : 'bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50'
             }`}
           >
-            chat poético
+            chat
           </button>
 
           <button
             onClick={() => setShowAnalytics(!showAnalytics)}
-            className={`px-4 py-2 text-xs rounded-full transition-all ${
+            className={`px-3 py-1 text-xs rounded-full transition-all ${
               showAnalytics 
                 ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-600/30' 
                 : 'bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50'
             }`}
           >
-            analíticas
+            métricas
+          </button>
+
+          <button
+            onClick={() => setShowBlockchain(!showBlockchain)}
+            className={`px-3 py-1 text-xs rounded-full transition-all ${
+              showBlockchain 
+                ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/30' 
+                : 'bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50'
+            }`}
+          >
+            blockchain
           </button>
         </div>
       </header>
 
-      {/* Optimized Content Area */}
+      {/* Área de contenido optimizada */}
       <div className="relative z-10 px-4 pb-8">
-        <ScrollArea className={isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-250px)]'}>
+        <OptimizedScrollArea 
+          className={isMobile ? 'h-[calc(100vh-160px)]' : 'h-[calc(100vh-200px)]'}
+          onScroll={handleScroll}
+        >
           <div className={`
             ${viewMode === 'grid' 
               ? `grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`
@@ -212,10 +252,10 @@ export const OptimizedUniverseInterface = ({
               <div>Ajusta la intensidad poética para ver más fragmentos</div>
             </div>
           )}
-        </ScrollArea>
+        </OptimizedScrollArea>
       </div>
 
-      {/* Active Fragment Panel */}
+      {/* Panel de fragmento activo */}
       {activeFragment && (
         <DraggablePoetryPanel
           title={`fragmento.${activeFragment.page}`}
@@ -237,19 +277,22 @@ export const OptimizedUniverseInterface = ({
                 <div>Puntuación poética: {(activeFragment.poeticScore * 100).toFixed(1)}%</div>
                 <div>Singularidad: {(activeFragment.uniqueness * 100).toFixed(1)}%</div>
                 <div>Intensidad: {(activeFragment.intensity * 100).toFixed(1)}%</div>
+                {activeFragment.hash && (
+                  <div>Hash: {activeFragment.hash.substring(0, 12)}...</div>
+                )}
               </div>
             </div>
           </div>
         </DraggablePoetryPanel>
       )}
 
-      {/* Poetry Chat */}
+      {/* Chat poético */}
       {showChat && <PoetryChat />}
 
-      {/* Analytics Panel */}
+      {/* Panel de analíticas mejorado */}
       {showAnalytics && (
         <DraggablePoetryPanel
-          title="analíticas.poéticas"
+          title="analíticas.lovable"
           defaultPosition={{ x: 100, y: 100 }}
           minWidth={400}
           minHeight={300}
@@ -260,21 +303,21 @@ export const OptimizedUniverseInterface = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-purple-900/20 p-3 rounded-lg">
                 <div className="text-purple-400 text-sm">Total Fragmentos</div>
-                <div className="text-2xl font-mono">{fragments.length}</div>
+                <div className="text-2xl font-mono">{normalizedFragments.length}</div>
               </div>
               <div className="bg-cyan-900/20 p-3 rounded-lg">
                 <div className="text-cyan-400 text-sm">Promedio Poético</div>
                 <div className="text-2xl font-mono">
-                  {fragments.length > 0 
-                    ? (fragments.reduce((acc, f) => acc + f.poeticScore, 0) / fragments.length * 100).toFixed(1)
+                  {normalizedFragments.length > 0 
+                    ? (normalizedFragments.reduce((acc, f) => acc + f.poeticScore, 0) / normalizedFragments.length * 100).toFixed(1)
                     : 0}%
                 </div>
               </div>
               <div className="bg-pink-900/20 p-3 rounded-lg">
                 <div className="text-pink-400 text-sm">Singularidad Media</div>
                 <div className="text-2xl font-mono">
-                  {fragments.length > 0 
-                    ? (fragments.reduce((acc, f) => acc + f.uniqueness, 0) / fragments.length * 100).toFixed(1)
+                  {normalizedFragments.length > 0 
+                    ? (normalizedFragments.reduce((acc, f) => acc + f.uniqueness, 0) / normalizedFragments.length * 100).toFixed(1)
                     : 0}%
                 </div>
               </div>
@@ -283,13 +326,31 @@ export const OptimizedUniverseInterface = ({
                 <div className="text-2xl font-mono">{selectedFragments.size}</div>
               </div>
             </div>
+            
+            <div className="bg-green-900/20 p-3 rounded-lg">
+              <div className="text-green-400 text-sm mb-2">Progreso de Scroll</div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-green-400 h-2 rounded-full transition-all"
+                  style={{ width: `${scrollProgress * 100}%` }}
+                />
+              </div>
+            </div>
           </div>
         </DraggablePoetryPanel>
       )}
 
-      {/* Background Effects */}
+      {/* Blockchain poético */}
+      {showBlockchain && (
+        <BlockchainPoetryCore 
+          fragments={normalizedFragments}
+          onBlockMined={handleBlockMined}
+        />
+      )}
+
+      {/* Efectos de fondo optimizados */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        {[...Array(isMobile ? 15 : 30)].map((_, i) => (
+        {[...Array(isMobile ? 8 : 15)].map((_, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-cyan-400/20 rounded-full animate-pulse"
