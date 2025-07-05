@@ -82,6 +82,8 @@ export class PoemaScrapingService {
       for (let i = 0; i < fragmentCount; i++) {
         const seed = biopoemaSeeds[Math.floor(Math.random() * biopoemaSeeds.length)];
         const intensity = Math.sin(this.generationCycle * 0.1 + i) * 0.5 + 0.5;
+        const poeticScore = Math.random() * 0.8 + 0.2;
+        const uniqueness = Math.random() * 0.6 + 0.4;
         
         fragments.push({
           id: `log-${page}-${this.generationCycle}-${i}`,
@@ -91,7 +93,11 @@ export class PoemaScrapingService {
           timestamp: Date.now() + i,
           page,
           intensity,
-          mutations: Math.floor(Math.log(this.generationCycle + 1))
+          mutations: Math.floor(Math.log(this.generationCycle + 1)),
+          poeticScore,
+          uniqueness,
+          cluster: Math.floor(Math.random() * 5),
+          hash: Math.random().toString(36).substring(7)
         });
       }
 
@@ -127,8 +133,8 @@ export class PoemaScrapingService {
   }
 
   private selectRandomType(): PoemaFragment['type'] {
-    const types: PoemaFragment['type'][] = ['text', 'poem', 'glitch', 'biopoetic', 'quote'];
-    const weights = [0.3, 0.4, 0.1, 0.15, 0.05]; // Biopoetic y poem más probables
+    const types: PoemaFragment['type'][] = ['prosa', 'poema', 'glitch', 'biopoetic', 'meta'];
+    const weights = [0.3, 0.4, 0.1, 0.15, 0.05]; // Biopoetic y poema más probables
     
     const random = Math.random();
     let accumulator = 0;
@@ -186,7 +192,11 @@ export class PoemaScrapingService {
       timestamp: Date.now(),
       page,
       intensity: Math.random(),
-      mutations: 0
+      mutations: 0,
+      poeticScore: Math.random() * 0.8 + 0.2,
+      uniqueness: Math.random() * 0.6 + 0.4,
+      cluster: Math.floor(Math.random() * 5),
+      hash: Math.random().toString(36).substring(7)
     }];
   }
 

@@ -65,7 +65,6 @@ export const OptimizedScrollArea = ({
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          WebkitScrollbar: { display: 'none' }
         }}
       >
         {children}
