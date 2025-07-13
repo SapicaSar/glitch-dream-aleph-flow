@@ -77,7 +77,7 @@ export const OptimizedThinkingInterface = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-20">
         <div className="text-center">
           <div className="text-muted-foreground text-sm font-mono animate-pulse">
             conectando con los poemanautas...
@@ -88,9 +88,9 @@ export const OptimizedThinkingInterface = () => {
   }
 
   return (
-    <div className="relative">
-      {/* Header zen */}
-      <div className="fixed top-4 left-4 z-40 bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3">
+    <div className="fixed inset-0 z-10">
+      {/* Header zen - ahora fijo en la parte superior */}
+      <div className="fixed top-4 right-4 z-40 bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg p-3">
         <div className="text-foreground font-mono text-sm">sapicasar.poemanautas</div>
         <div className="text-xs text-muted-foreground mt-1">
           pensamientos activos: {activeThoughts}
