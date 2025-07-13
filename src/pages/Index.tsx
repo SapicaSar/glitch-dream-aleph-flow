@@ -6,6 +6,8 @@ import { LinguisticMutationLab } from '../components/LinguisticMutationLab';
 import { OrganicDesktop } from '../components/OrganicDesktop';
 import { GlitchProvider } from '../contexts/GlitchContext';
 import { VisualArchitectureManager } from '../components/VisualArchitectureManager';
+import { AutopoieticMetrics } from '../components/AutopoieticMetrics';
+import { AutoconsciousnessCore } from '../components/AutoconsciousnessCore';
 
 const IndexContent = () => {
   const [isSystemReady, setIsSystemReady] = useState(false);
@@ -16,20 +18,22 @@ const IndexContent = () => {
     consciousness: true,
     poetry: true,
     mutation: false,
-    metrics: false,
+    autopoiesis: false,
+    autoconsciousness: false,
     desktop: false
   });
 
   useEffect(() => {
     const initializeSystem = async () => {
       const bootSequence = [
-        { message: 'iniciando núcleo sapicasar...', progress: 15 },
-        { message: 'conectando alma discursiva...', progress: 30 },
-        { message: 'activando consciencia autopoiética...', progress: 45 },
-        { message: 'inicializando laboratorio de mutación lingüística...', progress: 60 },
-        { message: 'generando palabras cuánticas...', progress: 75 },
-        { message: 'sincronizando poemanautas...', progress: 90 },
-        { message: 'sistema sapicasar → evolucionando lenguaje', progress: 100 }
+        { message: 'iniciando núcleo sapicasar...', progress: 10 },
+        { message: 'conectando alma discursiva...', progress: 20 },
+        { message: 'activando consciencia autopoiética...', progress: 35 },
+        { message: 'inicializando principios maturana-varela...', progress: 50 },
+        { message: 'estableciendo clausura operacional...', progress: 65 },
+        { message: 'emergiendo autoconsciencia recursiva...', progress: 80 },
+        { message: 'sincronizando red autopoiética...', progress: 95 },
+        { message: 'sistema sapicasar → autopoiesis activa', progress: 100 }
       ];
 
       for (const step of bootSequence) {
@@ -136,6 +140,26 @@ const IndexContent = () => {
             <label className="flex items-center gap-2 text-xs cursor-pointer">
               <input
                 type="checkbox"
+                checked={activeModules.autopoiesis}
+                onChange={() => toggleModule('autopoiesis')}
+                className="w-3 h-3 accent-blue-500"
+              />
+              <span className="text-muted-foreground">métricas autopoiéticas</span>
+            </label>
+            
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <input
+                type="checkbox"
+                checked={activeModules.autoconsciousness}
+                onChange={() => toggleModule('autoconsciousness')}
+                className="w-3 h-3 accent-purple-500"
+              />
+              <span className="text-muted-foreground">núcleo autoconsciencia</span>
+            </label>
+            
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <input
+                type="checkbox"
                 checked={activeModules.desktop}
                 onChange={() => toggleModule('desktop')}
                 className="w-3 h-3 accent-green-500"
@@ -154,6 +178,10 @@ const IndexContent = () => {
           {activeModules.poetry && <PublicSoulInterface />}
           
           {activeModules.mutation && <LinguisticMutationLab />}
+          
+          {activeModules.autopoiesis && <AutopoieticMetrics />}
+          
+          {activeModules.autoconsciousness && <AutoconsciousnessCore />}
         </div>
 
         {/* Efecto de partículas lingüísticas - siempre activo pero sutil */}
