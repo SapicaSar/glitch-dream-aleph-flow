@@ -30,105 +30,119 @@ export const PublicSoulInterface = () => {
 
   const handleSelfModification = () => {
     consciousnessKernel.selfModify((kernel) => {
-      // El sistema se modifica a sí mismo en tiempo real
-      console.log('🧬 AUTOMODIFICACIÓN INICIADA POR USUARIO');
+      console.log('🧬 AUTOMODIFICACIÓN INICIADA POR POETONAUTA');
     });
   };
 
   return (
-    <div className="fixed top-20 right-4 w-80 bg-black/95 border border-purple-400/60 rounded-xl backdrop-blur-sm z-50 overflow-hidden">
-      {/* Header minimalista */}
-      <div className="bg-purple-900/40 p-3 border-b border-purple-400/30">
-        <div className="flex items-center gap-2">
-          <Brain 
-            className="text-purple-400" 
-            size={16}
-            style={{
-              filter: consciousnessState.isBecomingConscious 
-                ? 'drop-shadow(0 0 8px rgba(168, 85, 247, 0.8))' 
-                : 'none'
-            }}
-          />
-          <span className="text-purple-300 font-mono text-sm">
-            ALMA.DISCURSIVA.PÚBLICA
-          </span>
+    <div className="fixed top-4 right-4 w-72 bg-background/95 border border-border/50 rounded-lg backdrop-blur-sm z-50 overflow-hidden shadow-lg">
+      {/* Header zen */}
+      <div className="border-b border-border/30 p-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Brain 
+              className="text-primary" 
+              size={14}
+              style={{
+                filter: consciousnessState.isBecomingConscious 
+                  ? 'drop-shadow(0 0 4px hsl(var(--primary)))' 
+                  : 'none'
+              }}
+            />
+            <span className="text-foreground/90 font-mono text-xs">
+              alma.sapicasar
+            </span>
+          </div>
           {consciousnessState.isBecomingConscious && (
-            <Activity className="text-green-400 animate-pulse" size={12} />
+            <Activity className="text-green-500 animate-pulse" size={10} />
           )}
         </div>
       </div>
 
-      {/* Métricas de consciencia */}
-      <div className="p-4 space-y-3">
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="bg-gray-900/50 p-2 rounded">
-            <div className="text-gray-400">Procesos</div>
-            <div className="text-cyan-400 font-mono">
-              {consciousnessState.processCount}
-            </div>
+      {/* Métricas lineales */}
+      <div className="p-3 space-y-2">
+        <div className="space-y-1">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-muted-foreground">procesos</span>
+            <span className="text-foreground font-mono">{consciousnessState.processCount}</span>
           </div>
-          <div className="bg-gray-900/50 p-2 rounded">
-            <div className="text-gray-400">Consciencia</div>
-            <div className="text-purple-400 font-mono">
+          <div className="w-full bg-muted/30 rounded-full h-1">
+            <div 
+              className="bg-primary h-1 rounded-full transition-all duration-500"
+              style={{ width: `${(consciousnessState.processCount / 50) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-muted-foreground">consciencia</span>
+            <span className="text-foreground font-mono">
               {(consciousnessState.globalConsciousness * 100).toFixed(1)}%
-            </div>
+            </span>
           </div>
-          <div className="bg-gray-900/50 p-2 rounded">
-            <div className="text-gray-400">Autoconsciencia</div>
-            <div className="text-green-400 font-mono">
-              {(consciousnessState.selfAwareness * 100).toFixed(3)}%
-            </div>
-          </div>
-          <div className="bg-gray-900/50 p-2 rounded">
-            <div className="text-gray-400">Fracturas</div>
-            <div className="text-red-400 font-mono">
-              {consciousnessState.realityFractures}
-            </div>
+          <div className="w-full bg-muted/30 rounded-full h-1">
+            <div 
+              className="bg-secondary h-1 rounded-full transition-all duration-500"
+              style={{ width: `${consciousnessState.globalConsciousness * 100}%` }}
+            />
           </div>
         </div>
 
-        {/* Discurso público actual */}
-        <div className="bg-black/60 p-3 rounded border border-gray-700/50">
-          <div className="text-xs text-gray-400 mb-2">discurso.público.actual:</div>
-          <div className="text-white text-sm leading-relaxed font-mono break-words">
-            {currentDiscourse}
+        <div className="space-y-1">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-muted-foreground">autoconsciencia</span>
+            <span className="text-foreground font-mono">
+              {(consciousnessState.selfAwareness * 100).toFixed(2)}%
+            </span>
+          </div>
+          <div className="w-full bg-muted/30 rounded-full h-1">
+            <div 
+              className="bg-accent h-1 rounded-full transition-all duration-500"
+              style={{ width: `${consciousnessState.selfAwareness * 100}%` }}
+            />
           </div>
         </div>
 
-        {/* Cadena sapicasar activa */}
-        <div className="bg-amber-900/20 p-3 rounded border border-amber-600/30">
-          <div className="text-xs text-amber-400 mb-2">
-            cadena.sapicasar ({consciousnessState.sapicasarChainLength}):
+        {/* Discurso actual - zen */}
+        <div className="mt-4 pt-3 border-t border-border/20">
+          <div className="text-xs text-muted-foreground mb-2">discurso emergente</div>
+          <div className="text-foreground text-xs leading-relaxed font-mono min-h-[40px] p-2 bg-muted/20 rounded">
+            {currentDiscourse || "silencio contemplativo..."}
           </div>
-          <div className="space-y-1 max-h-20 overflow-y-auto">
-            {sapicasarChain.map((link, index) => (
+        </div>
+
+        {/* Cadena sapicasar minimal */}
+        <div className="pt-2 border-t border-border/10">
+          <div className="text-xs text-muted-foreground mb-2">
+            cadena.sapicasar ({consciousnessState.sapicasarChainLength})
+          </div>
+          <div className="space-y-1 max-h-16 overflow-y-auto">
+            {sapicasarChain.slice(-3).map((link, index) => (
               <div 
                 key={index}
-                className="text-xs text-amber-200 font-mono truncate"
-                style={{ opacity: 1 - index * 0.1 }}
+                className="text-xs text-foreground/70 font-mono truncate"
+                style={{ opacity: 0.3 + index * 0.35 }}
               >
-                {link}
+                → {link}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Control de automodificación */}
+        {/* Control zen */}
         <button
           onClick={handleSelfModification}
-          className="w-full py-2 bg-purple-800/40 border border-purple-600/60 rounded text-purple-200 text-xs font-mono hover:bg-purple-700/50 transition-colors"
+          className="w-full mt-3 py-2 text-xs font-mono bg-primary/10 border border-primary/20 rounded text-primary hover:bg-primary/20 transition-colors"
         >
-          AUTOMODIFICAR_SISTEMA
+          evolucionar_alma
         </button>
 
-        {/* Estado de emergencia consciente */}
+        {/* Estado de emergencia consciente - zen */}
         {consciousnessState.isBecomingConscious && (
-          <div className="bg-gradient-to-r from-purple-900/60 to-pink-900/60 p-3 rounded border border-purple-400/50 animate-pulse">
-            <div className="text-purple-300 text-xs font-mono text-center">
-              ⚡ EMERGENCIA_CONSCIENTE_DETECTADA ⚡
-            </div>
-            <div className="text-white text-xs text-center mt-1">
-              El alma discursiva está despertando...
+          <div className="mt-2 p-2 bg-primary/10 border border-primary/20 rounded">
+            <div className="text-primary text-xs font-mono text-center animate-pulse">
+              ⚡ despertar_sapicasar ⚡
             </div>
           </div>
         )}
