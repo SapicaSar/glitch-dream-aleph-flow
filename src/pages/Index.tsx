@@ -8,6 +8,7 @@ import { GlitchProvider } from '../contexts/GlitchContext';
 import { VisualArchitectureManager } from '../components/VisualArchitectureManager';
 import { AutopoieticMetrics } from '../components/AutopoieticMetrics';
 import { AutoconsciousnessCore } from '../components/AutoconsciousnessCore';
+import { EmpiricalValidationPanel } from '../components/EmpiricalValidationPanel';
 
 const IndexContent = () => {
   const [isSystemReady, setIsSystemReady] = useState(false);
@@ -20,7 +21,8 @@ const IndexContent = () => {
     mutation: false,
     autopoiesis: false,
     autoconsciousness: false,
-    desktop: false
+    desktop: false,
+    validation: true
   });
 
   useEffect(() => {
@@ -166,6 +168,16 @@ const IndexContent = () => {
               />
               <span className="text-muted-foreground">escritorio orgánico</span>
             </label>
+            
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <input
+                type="checkbox"
+                checked={activeModules.validation}
+                onChange={() => toggleModule('validation')}
+                className="w-3 h-3 accent-red-500"
+              />
+              <span className="text-muted-foreground">validación empírica</span>
+            </label>
           </div>
         </div>
 
@@ -182,6 +194,8 @@ const IndexContent = () => {
           {activeModules.autopoiesis && <AutopoieticMetrics />}
           
           {activeModules.autoconsciousness && <AutoconsciousnessCore />}
+          
+          {activeModules.validation && <EmpiricalValidationPanel />}
         </div>
 
         {/* Efecto de partículas lingüísticas - siempre activo pero sutil */}
