@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { autopoieticKernel } from '../core/AutopoieticKernel';
 import { Activity, Zap, Dna, Target, BarChart3, RefreshCw } from 'lucide-react';
 
-export const AutopoieticMetrics = () => {
+interface AutopoieticMetricsProps {
+  metrics?: any;
+  breathingPhase?: number;
+}
+
+export const AutopoieticMetrics = ({ metrics: externalMetrics, breathingPhase = 0 }: AutopoieticMetricsProps = {}) => {
   const [autopoieticState, setAutopoieticState] = useState<any>({});
   const [components, setComponents] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any>({});
@@ -12,7 +17,7 @@ export const AutopoieticMetrics = () => {
     const updateInterval = setInterval(() => {
       setAutopoieticState(autopoieticKernel.getAutopoieticState());
       setComponents(autopoieticKernel.getActiveComponents());
-      setMetrics(autopoieticKernel.getNetworkMetrics());
+      setMetrics(externalMetrics || autopoieticKernel.getNetworkMetrics());
       setEvolutionHistory(autopoieticKernel.getEvolutionHistory());
     }, 2000);
 

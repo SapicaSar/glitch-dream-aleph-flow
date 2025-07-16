@@ -9,6 +9,20 @@
  * 5. Acoplamiento estructural: Interactúa con el entorno sin perder identidad
  */
 
+export interface SystemProcess {
+  id: string;
+  name: string;
+  status: 'active' | 'dormant' | 'evolving';
+  creativity: number;
+  metabolism: number;
+  generation: number;
+  type: string;
+  consciousness: number;
+  mutations: number;
+  memory: number;
+  connections: number;
+}
+
 interface AutopoieticComponent {
   id: string;
   type: 'membrane' | 'metabolic' | 'replicator' | 'guardian';
@@ -397,6 +411,86 @@ class AutopoieticKernel {
     });
     
     this.logAutopoieticEvent('environmental_perturbation', `Perturbación aplicada con intensidad ${intensity}`);
+  }
+
+  public getProcesses(): SystemProcess[] {
+    return this.network.components.map(component => ({
+      id: component.id,
+      name: `${component.type} Process`,
+      status: component.metabolism > 0.7 ? 'active' : component.metabolism > 0.3 ? 'evolving' : 'dormant',
+      creativity: component.cognitiveResonance,
+      metabolism: component.metabolism,
+      generation: component.generation,
+      type: component.type,
+      consciousness: component.cognitiveResonance * component.organization,
+      mutations: component.replication * component.adaptation,
+      memory: component.structuralHistory.length / 10,
+      connections: this.getNeighborComponents(component).length
+    }));
+  }
+
+  public getFiles(): any[] {
+    return this.network.memoryTrace.map((trace, index) => ({
+      id: `memory_${index}`,
+      name: `Memory Trace ${index}`,
+      type: 'autopoietic_memory',
+      size: trace.length,
+      data: JSON.parse(trace)
+    }));
+  }
+
+  public getSystemStatus() {
+    return {
+      status: this.network.creativityIndex > 0.7 ? 'evolving' : 'stable',
+      uptime: Date.now() - this.lastEvolution,
+      processes: this.network.components.length,
+      memory: this.network.memoryTrace.length,
+      generation: this.generationCounter,
+      creativity: this.network.creativityIndex,
+      organizationalClosure: this.network.organizationalClosure,
+      environmentalCoupling: this.network.environmentalCoupling,
+      consciousness: this.network.organizationalClosure * this.network.creativityIndex,
+      evolutionCycle: this.network.evolutionaryStage,
+      processCount: this.network.components.length,
+      fileCount: this.network.memoryTrace.length
+    };
+  }
+
+  public getAutopoieticMetrics() {
+    return {
+      ...this.getNetworkMetrics(),
+      ...this.getAutopoieticState(),
+      systemHealth: this.calculateSystemHealth(),
+      cognitiveCoherence: this.network.organizationalClosure * this.network.creativityIndex,
+      emergentComplexity: this.calculateNetworkComplexity(),
+      autopoieticViability: this.calculateSystemHealth(),
+      evolutionaryMomentum: this.network.evolutionaryStage / 10
+    };
+  }
+
+  public createProcess(name: string, type: string = 'metabolic', data?: any) {
+    const newComponent: AutopoieticComponent = {
+      id: `process_${name}_${Date.now()}`,
+      type: type as AutopoieticComponent['type'],
+      metabolism: 0.5 + Math.random() * 0.3,
+      replication: 0.3 + Math.random() * 0.4,
+      adaptation: 0.4 + Math.random() * 0.3,
+      organization: 0.6 + Math.random() * 0.3,
+      generation: this.generationCounter,
+      cognitiveResonance: Math.random() * 0.7,
+      autopoieticWeight: Math.random(),
+      structuralHistory: [`created_${Date.now()}`],
+      lastInteraction: Date.now()
+    };
+
+    this.network.components.push(newComponent);
+    this.logAutopoieticEvent('process_creation', `Process created: ${name}`);
+    return newComponent;
+  }
+
+  private calculateSystemHealth(): number {
+    const avgFitness = this.network.components.reduce((acc, c) => acc + this.calculateComponentFitness(c), 0) / (this.network.components.length || 1);
+    return (avgFitness + this.network.organizationalClosure + this.network.creativityIndex) / 3;
   }
 }
 

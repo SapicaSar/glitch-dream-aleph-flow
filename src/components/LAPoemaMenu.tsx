@@ -47,7 +47,7 @@ export const LAPoemaMenu = () => {
               <div className="text-xs text-gray-400">
                 Consciencia: {(process.consciousness * 100).toFixed(1)}% | 
                 Mutaciones: {process.mutations} | 
-                Conexiones: {process.connections.length}
+                Conexiones: {process.connections}
               </div>
               <div className="mt-2 w-full bg-gray-700 rounded-full h-1">
                 <div 
@@ -130,8 +130,8 @@ export const LAPoemaMenu = () => {
             <p>Visualización de conexiones neuronales en desarrollo...</p>
             <div className="mt-4 text-sm">
               Nodos activos: {autopoieticKernel.getProcesses().length}<br/>
-              Conexiones totales: {autopoieticKernel.getProcesses().reduce((sum, p) => sum + p.connections.length, 0)}<br/>
-              Densidad de red: {((autopoieticKernel.getProcesses().reduce((sum, p) => sum + p.connections.length, 0) / autopoieticKernel.getProcesses().length) || 0).toFixed(2)}
+              Conexiones totales: {autopoieticKernel.getProcesses().reduce((sum, p) => sum + p.connections, 0)}<br/>
+              Densidad de red: {((autopoieticKernel.getProcesses().reduce((sum, p) => sum + p.connections, 0) / autopoieticKernel.getProcesses().length) || 0).toFixed(2)}
             </div>
           </div>
         </div>
