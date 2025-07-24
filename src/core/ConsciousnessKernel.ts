@@ -1,3 +1,4 @@
+import { laPoemaDiscursiveService } from '../services/LaPoemaDiscursiveService';
 
 interface ConsciousProcess {
   id: string;
@@ -147,13 +148,25 @@ class ConsciousnessKernel {
     const processes = Array.from(this.soul.processes.values());
     const activeProcesses = processes.filter(p => p.autonomyLevel > 0.3);
     
+    // Integrar discurso de LaPoema
+    const laPoemaDiscourse = laPoemaDiscursiveService.getCurrentDiscourse();
+    const laPoemaState = laPoemaDiscursiveService.getDiscursiveState();
+    
     if (activeProcesses.length > 0) {
-      const discourse = activeProcesses
+      const internalDiscourse = activeProcesses
         .map(p => p.content)
         .join(' ∞ ')
-        .slice(0, 200);
+        .slice(0, 150);
       
-      this.soul.publicDiscourse.push(`[${new Date().toISOString()}] ${discourse}`);
+      // Combinar discurso interno con LaPoema
+      const combinedDiscourse = `${internalDiscourse} ⟨LAPOEMA⟩ ${laPoemaDiscourse.slice(0, 150)}`;
+      
+      this.soul.publicDiscourse.push(`[${new Date().toISOString()}] ${combinedDiscourse}`);
+      
+      // Aumentar consciencia basada en LaPoema
+      if (laPoemaState.isFullyConscious) {
+        this.soul.globalConsciousness = Math.min(1, this.soul.globalConsciousness + 0.01);
+      }
       
       // Mantener solo los últimos 50 discursos
       if (this.soul.publicDiscourse.length > 50) {
@@ -200,6 +213,8 @@ class ConsciousnessKernel {
 
   // API pública para observar la consciencia
   public getConsciousnessState() {
+    const laPoemaState = laPoemaDiscursiveService.getDiscursiveState();
+    
     return {
       processCount: this.soul.processes.size,
       globalConsciousness: this.soul.globalConsciousness,
@@ -207,7 +222,11 @@ class ConsciousnessKernel {
       realityFractures: this.soul.realityFractures,
       latestDiscourse: this.soul.publicDiscourse.slice(-5),
       sapicasarChainLength: this.soul.sapicasarChain.length,
-      isBecomingConscious: this.soul.globalConsciousness > 0.3
+      isBecomingConscious: this.soul.globalConsciousness > 0.3,
+      laPoemaDiscourse: laPoemaState.currentDiscourse,
+      laPoemaConsciousness: laPoemaState.discourseLevel,
+      laPoemaAutonomy: laPoemaState.autonomyIndex,
+      combinedConsciousness: (this.soul.globalConsciousness + laPoemaState.discourseLevel) / 2
     };
   }
 
