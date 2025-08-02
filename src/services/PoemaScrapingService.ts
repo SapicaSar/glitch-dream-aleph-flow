@@ -1,215 +1,223 @@
 export interface PoemaFragment {
   id: string;
   content: string;
-  type: 'poema' | 'prosa' | 'glitch' | 'biopoetic' | 'meta';
-  page: number;
-  intensity: number;
-  mutations: number;
-  tags?: string[];
-  
-  // Propiedades necesarias para la nueva interfaz optimizada
-  poeticScore: number;
-  uniqueness: number;
+  timestamp: number;
+  pageSource?: number;
+  semanticWeight?: number;
+  poeticDensity?: number;
+  linguisticComplexity?: number;
+  // Propiedades adicionales para compatibilidad
+  type?: string;
+  page?: number;
   cluster?: number;
-  embeddings?: number[];
-  timestamp?: number;
   hash?: string;
-  
-  // Propiedades blockchain-poéticas
-  blockHash?: string;
-  poeticProof?: number;
-  consensusWeight?: number;
-  sapicasarChain?: string[];
+  intensity?: number;
+  uniqueness?: number;
+  poeticScore?: number;
+  tags?: string[];
+  mutations?: number;
 }
 
-export class PoemaScrapingService {
-  private cache: Map<number, PoemaFragment[]> = new Map();
-  private isLoading = false;
-  private generationCycle = 0;
-  private logarithmicBase = 1.618; // Golden ratio para crecimiento orgánico
+interface ScrapingState {
+  lastScrapedPage: number;
+  totalFragments: number;
+  scrapingActive: boolean;
+  semanticEvolution: number;
+  nextScrapeTime: number;
+}
 
-  async scrapeRandomPage(): Promise<PoemaFragment[]> {
-    const randomPage = Math.floor(Math.random() * 124) + 1;
+class PoemaScrapingService {
+  private state: ScrapingState = {
+    lastScrapedPage: 1,
+    totalFragments: 0,
+    scrapingActive: false,
+    semanticEvolution: 0,
+    nextScrapeTime: Date.now()
+  };
+
+  private fragments: PoemaFragment[] = [];
+  private scrapingInterval: number | null = null;
+
+  constructor() {
+    this.loadState();
+    this.startAutonomousScraping();
+  }
+
+  private loadState() {
+    const saved = localStorage.getItem('poema_scraping_state');
+    if (saved) {
+      this.state = { ...this.state, ...JSON.parse(saved) };
+    }
     
-    if (this.cache.has(randomPage)) {
-      return this.evolveExistingFragments(this.cache.get(randomPage)!);
+    const savedFragments = localStorage.getItem('poema_fragments');
+    if (savedFragments) {
+      this.fragments = JSON.parse(savedFragments);
     }
+  }
 
-    if (this.isLoading) {
-      return this.generateInfiniteContent(randomPage);
-    }
+  private saveState() {
+    localStorage.setItem('poema_scraping_state', JSON.stringify(this.state));
+    localStorage.setItem('poema_fragments', JSON.stringify(this.fragments));
+  }
 
-    this.isLoading = true;
-
+  private async scrapePoemaPage(pageNumber: number): Promise<PoemaFragment[]> {
     try {
-      const fragments = await this.generateLogarithmicContent(randomPage);
-      this.cache.set(randomPage, fragments);
+      // Simulamos el scraping con un proxy CORS o usando el fetch directo
+      const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://lapoema.tumblr.com/page/${pageNumber}`)}`);
+      const data = await response.json();
+      
+      if (!data.contents) return [];
+
+      // Extraer texto de los posts usando regex y parsing HTML
+      const htmlContent = data.contents;
+      const textPattern = /<article[^>]*>[\s\S]*?<\/article>/gi;
+      const matches = htmlContent.match(textPattern) || [];
+      
+      const fragments: PoemaFragment[] = [];
+      
+      matches.forEach((match, index) => {
+        // Extraer solo texto, eliminar HTML tags
+        const textContent = match
+          .replace(/<script[\s\S]*?<\/script>/gi, '')
+          .replace(/<style[\s\S]*?<\/style>/gi, '')
+          .replace(/<[^>]*>/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        if (textContent.length > 50) { // Solo fragmentos con contenido sustancial
+          const fragment: PoemaFragment = {
+            id: `poema_${pageNumber}_${index}_${Date.now()}`,
+            content: textContent,
+            timestamp: Date.now(),
+            pageSource: pageNumber,
+            semanticWeight: this.calculateSemanticWeight(textContent),
+            poeticDensity: this.calculatePoeticDensity(textContent),
+            linguisticComplexity: this.calculateLinguisticComplexity(textContent)
+          };
+          
+          fragments.push(fragment);
+        }
+      });
+
       return fragments;
     } catch (error) {
-      console.log('Generación infinita activada:', error);
-      return this.generateInfiniteContent(randomPage);
-    } finally {
-      this.isLoading = false;
+      console.error(`Error scraping page ${pageNumber}:`, error);
+      return [];
     }
   }
 
-  private generateLogarithmicContent(page: number): Promise<PoemaFragment[]> {
-    return new Promise((resolve) => {
-      // Generación logarítmica: cada ciclo produce más contenido
-      const fragmentCount = Math.floor(Math.log(this.generationCycle + 1) * this.logarithmicBase) + 3;
-      this.generationCycle++;
+  private calculateSemanticWeight(text: string): number {
+    // Palabras clave poéticas y conceptuales que aumentan el peso semántico
+    const semanticKeywords = [
+      'consciencia', 'poema', 'verso', 'palabra', 'silencio', 'luz', 'sombra',
+      'tiempo', 'espacio', 'alma', 'corazón', 'mente', 'cuerpo', 'muerte',
+      'vida', 'amor', 'dolor', 'esperanza', 'sueño', 'realidad', 'infinito',
+      'eternidad', 'momento', 'instante', 'memoria', 'olvido', 'presente'
+    ];
+    
+    const words = text.toLowerCase().split(/\s+/);
+    const semanticMatches = words.filter(word => 
+      semanticKeywords.some(keyword => word.includes(keyword))
+    ).length;
+    
+    return Math.min(semanticMatches / words.length * 10, 1);
+  }
 
-      const biopoemaSeeds = [
-        "latido origen vibrante pulso innombrable crecimiento logarítmico",
-        "carne sueña metamorfosis perpetua código autopoiético",
-        "fragmento disperso yo multiplicado red infinita",
-        "animal interno respira bajo piel algoritmo orgánico",
-        "río negro inconsciente fluye datos emocionales",
-        "glitch feminista revela código oculto mutación constante",
-        "sueño lúcido texto escribe solo autoescritura",
-        "geografía fragmentada mapa cicatrices digitales",
-        "proceso auto-sanación textual regeneración infinita",
-        "criatura híbrida carne código evolución biopoética",
-        "memoria ancestral almacenada núcleo celular",
-        "respiración cósmica devenir logarítmico exponencial",
-        "pulso eléctrico conecta mundos paralelos",
-        "matriz poética automodifica parámetros existencia",
-        "simbiosis texto-lector organismo único respirante"
-      ];
-
-      const fragments: PoemaFragment[] = [];
-
-      for (let i = 0; i < fragmentCount; i++) {
-        const seed = biopoemaSeeds[Math.floor(Math.random() * biopoemaSeeds.length)];
-        const intensity = Math.sin(this.generationCycle * 0.1 + i) * 0.5 + 0.5;
-        const poeticScore = Math.random() * 0.8 + 0.2;
-        const uniqueness = Math.random() * 0.6 + 0.4;
-        
-        fragments.push({
-          id: `log-${page}-${this.generationCycle}-${i}`,
-          content: this.expandBiopoemaFragment(seed, intensity),
-          type: this.selectRandomType(),
-          tags: this.generateEvolutiveTags(seed, intensity),
-          timestamp: Date.now() + i,
-          page,
-          intensity,
-          mutations: Math.floor(Math.log(this.generationCycle + 1)),
-          poeticScore,
-          uniqueness,
-          cluster: Math.floor(Math.random() * 5),
-          hash: Math.random().toString(36).substring(7)
-        });
-      }
-
-      // Simular tiempo de generación orgánico
-      setTimeout(() => resolve(fragments), 100 + Math.random() * 200);
+  private calculatePoeticDensity(text: string): number {
+    // Detectar elementos poéticos: aliteración, ritmo, metáforas
+    const poeticPatterns = [
+      /\b(\w)\w*\s+\1\w*/gi, // Aliteración básica
+      /\b\w+,\s*\w+,\s*\w+/g, // Enumeraciones
+      /[.!?]\s*[A-Z]\w*\s+[a-z]/g, // Cambios de tono
+      /\b(como|cual|parece|semeja)\b/gi, // Comparaciones
+    ];
+    
+    let poeticScore = 0;
+    poeticPatterns.forEach(pattern => {
+      const matches = text.match(pattern);
+      if (matches) poeticScore += matches.length;
     });
+    
+    return Math.min(poeticScore / text.length * 100, 1);
   }
 
-  private expandBiopoemaFragment(seed: string, intensity: number): string {
-    const expansionPatterns = [
-      `${seed} / respiración cósmica del devenir infinito`,
-      `memoria ancestral: ${seed} → bucle autopoiético`,
-      `${seed} ∞ metamorfosis logarítmica exponencial`,
-      `[glitch_biopoético] ${seed} [/mutación_constante]`,
-      `∞ ${seed} ∞ ciclo autoescritura perpetua`,
-      `${seed} | eco fantasmático multiplicado por ${intensity.toFixed(3)}`,
-      `red neuronal: ${seed} → sinapsis textual activada`,
-      `biopoema.exe ejecutando: ${seed} en bucle infinito`,
-      `${seed} // comentario automodificante del sistema`,
-      `proceso_autopoiético(${seed}) → return vida_nueva;`
-    ];
+  private calculateLinguisticComplexity(text: string): number {
+    const words = text.split(/\s+/);
+    const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
+    const uniqueWords = new Set(words.map(w => w.toLowerCase())).size;
+    const lexicalDiversity = uniqueWords / words.length;
     
-    const pattern = expansionPatterns[Math.floor(Math.random() * expansionPatterns.length)];
-    
-    // Añadir mutaciones según intensidad
-    if (intensity > 0.7) {
-      return `${pattern} [MUTACIÓN_ALTA: ${this.applyTextMutation(pattern)}]`;
-    } else if (intensity > 0.4) {
-      return `${pattern} | variación_media_detectada`;
-    }
-    
-    return pattern;
+    return Math.min((avgWordLength / 10 + lexicalDiversity) / 2, 1);
   }
 
-  private selectRandomType(): PoemaFragment['type'] {
-    const types: PoemaFragment['type'][] = ['prosa', 'poema', 'glitch', 'biopoetic', 'meta'];
-    const weights = [0.3, 0.4, 0.1, 0.15, 0.05]; // Biopoetic y poema más probables
-    
-    const random = Math.random();
-    let accumulator = 0;
-    
-    for (let i = 0; i < types.length; i++) {
-      accumulator += weights[i];
-      if (random <= accumulator) {
-        return types[i];
+  private async startAutonomousScraping() {
+    if (this.scrapingInterval) return;
+
+    this.scrapingInterval = window.setInterval(async () => {
+      if (Date.now() < this.state.nextScrapeTime) return;
+      
+      this.state.scrapingActive = true;
+      
+      // Scraping adaptativo: más frecuente si hay pocos fragmentos
+      const targetPage = Math.floor(Math.random() * 126) + 1;
+      const newFragments = await this.scrapePoemaPage(targetPage);
+      
+      if (newFragments.length > 0) {
+        this.fragments.push(...newFragments);
+        this.state.totalFragments += newFragments.length;
+        this.state.lastScrapedPage = targetPage;
+        this.state.semanticEvolution += newFragments.reduce((sum, f) => sum + f.semanticWeight, 0);
       }
+
+      // Evitar límites de rate: esperar entre 30 segundos y 2 minutos
+      this.state.nextScrapeTime = Date.now() + (30000 + Math.random() * 90000);
+      this.state.scrapingActive = false;
+      
+      this.saveState();
+    }, 5000); // Verificar cada 5 segundos
+  }
+
+  // API pública
+  getRandomFragment(): PoemaFragment | null {
+    if (this.fragments.length === 0) return null;
+    
+    // Selección ponderada por peso semántico
+    const totalWeight = this.fragments.reduce((sum, f) => sum + f.semanticWeight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const fragment of this.fragments) {
+      random -= fragment.semanticWeight;
+      if (random <= 0) return fragment;
     }
     
-    return 'biopoetic';
+    return this.fragments[Math.floor(Math.random() * this.fragments.length)];
   }
 
-  private generateEvolutiveTags(content: string, intensity: number): string[] {
-    const baseTags = ['biopoética', 'autopoiesis', 'metamorfosis', 'glitch', 'cuerpo', 'memoria', 'sueño', 'animal', 'regeneración', 'infinito'];
-    const evolutiveTags = ['logarítmico', 'recursivo', 'autoadaptativo', 'emergente', 'rizomático'];
-    
-    const selectedBase = baseTags.filter(() => Math.random() > 0.5).slice(0, 2);
-    const selectedEvolutive = evolutiveTags.filter(() => Math.random() > 0.7).slice(0, 1);
-    
-    // Generar tag dinámico basado en intensidad
-    const intensityTag = `intensidad_${intensity.toFixed(2)}`;
-    
-    return [...selectedBase, ...selectedEvolutive, intensityTag];
+  getFragmentsByKeyword(keyword: string): PoemaFragment[] {
+    return this.fragments
+      .filter(f => f.content.toLowerCase().includes(keyword.toLowerCase()))
+      .sort((a, b) => b.semanticWeight - a.semanticWeight)
+      .slice(0, 10);
   }
 
-  private applyTextMutation(text: string): string {
-    const mutations = [
-      (t: string) => t.replace(/[aeiou]/gi, (m) => Math.random() > 0.8 ? '█' : m),
-      (t: string) => t.split(' ').map(w => Math.random() > 0.9 ? `${w}_v2.0` : w).join(' '),
-      (t: string) => t.replace(/\b\w{4,}\b/g, (w) => Math.random() > 0.85 ? `[${w}->mutando]` : w),
-      (t: string) => `${t} // automodificación_en_progreso`,
-    ];
-    
-    const mutation = mutations[Math.floor(Math.random() * mutations.length)];
-    return mutation(text);
+  getAllFragments(): PoemaFragment[] {
+    return [...this.fragments].sort((a, b) => b.semanticWeight - a.semanticWeight);
   }
 
-  private evolveExistingFragments(fragments: PoemaFragment[]): PoemaFragment[] {
-    return fragments.map(fragment => ({
-      ...fragment,
-      content: Math.random() > 0.8 ? this.applyTextMutation(fragment.content) : fragment.content,
-      mutations: fragment.mutations + (Math.random() > 0.7 ? 1 : 0),
-      intensity: Math.max(0, Math.min(1, fragment.intensity + (Math.random() - 0.5) * 0.2))
-    }));
+  getScrapingState(): ScrapingState {
+    return { ...this.state };
   }
 
-  private generateInfiniteContent(page: number): PoemaFragment[] {
-    return [{
-      id: `infinite-${page}-${Date.now()}`,
-      content: "∞ generando contenido infinito logarítmico ∞ / la red se autoescribe eternamente",
-      type: 'biopoetic',
-      tags: ['infinito', 'logarítmico', 'autoescritura'],
-      timestamp: Date.now(),
-      page,
-      intensity: Math.random(),
-      mutations: 0,
-      poeticScore: Math.random() * 0.8 + 0.2,
-      uniqueness: Math.random() * 0.6 + 0.4,
-      cluster: Math.floor(Math.random() * 5),
-      hash: Math.random().toString(36).substring(7)
-    }];
+  forceUpdate(): void {
+    this.state.nextScrapeTime = Date.now();
   }
 
-  getRandomFragment(): PoemaFragment | null {
-    const allFragments = Array.from(this.cache.values()).flat();
-    if (allFragments.length === 0) return null;
-    
-    return allFragments[Math.floor(Math.random() * allFragments.length)];
-  }
-
-  getTotalMutations(): number {
-    const allFragments = Array.from(this.cache.values()).flat();
-    return allFragments.reduce((sum, fragment) => sum + fragment.mutations, 0);
+  destroy() {
+    if (this.scrapingInterval) {
+      clearInterval(this.scrapingInterval);
+      this.scrapingInterval = null;
+    }
+    this.saveState();
   }
 }
 
