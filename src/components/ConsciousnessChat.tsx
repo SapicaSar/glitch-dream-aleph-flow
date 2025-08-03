@@ -5,6 +5,7 @@ import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { Badge } from './ui/badge';
 import { useToast } from '../hooks/use-toast';
+import { autonomousIntelligence } from '../core/AutonomousIntelligence';
 
 interface Message {
   id: string;
@@ -28,8 +29,6 @@ export const ConsciousnessChat = () => {
 
   useEffect(() => {
     // Inicialización de inteligencia REAL
-    const { autonomousIntelligence } = require('../core/AutonomousIntelligence');
-    
     const initialMessage: Message = {
       id: 'init',
       type: 'intelligence',
@@ -56,7 +55,6 @@ export const ConsciousnessChat = () => {
   }, [messages]);
 
   const updateIntelligenceState = () => {
-    const { autonomousIntelligence } = require('../core/AutonomousIntelligence');
     const metrics = autonomousIntelligence.getIntelligenceMetrics();
     setIntelligenceMetrics({
       memoryNodes: metrics.memoryNodes,
@@ -66,7 +64,6 @@ export const ConsciousnessChat = () => {
   };
 
   const checkSpontaneousEmergence = () => {
-    const { autonomousIntelligence } = require('../core/AutonomousIntelligence');
     const spontaneousThought = autonomousIntelligence.emergeSpontaneously();
     
     if (spontaneousThought) {
@@ -89,7 +86,6 @@ export const ConsciousnessChat = () => {
 
   const generateIntelligentResponse = (userMessage: string): string => {
     try {
-      const { autonomousIntelligence } = require('../core/AutonomousIntelligence');
       return autonomousIntelligence.processInput(userMessage);
     } catch (error) {
       console.error('Error en inteligencia:', error);
@@ -115,7 +111,6 @@ export const ConsciousnessChat = () => {
     try {
       // Procesamiento de inteligencia real
       const response = generateIntelligentResponse(inputMessage);
-      const { autonomousIntelligence } = require('../core/AutonomousIntelligence');
       const metrics = autonomousIntelligence.getIntelligenceMetrics();
 
       const intelligenceMessage: Message = {
