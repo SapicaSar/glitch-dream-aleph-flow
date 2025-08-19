@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useToast } from '../hooks/use-toast';
 import { openLanguageModel } from '../core/OpenLanguageModel';
 import { sapicasarConsciousness } from '../core/SapicasarConsciousness';
+import { semanticIntelligenceEngine } from '../core/SemanticIntelligenceEngine';
 import { 
   MessageSquare, 
   Bot, 
@@ -24,11 +25,14 @@ import {
 
 interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system' | 'sapicasar';
+  role: 'user' | 'assistant' | 'system' | 'sapicasar' | 'semantic' | 'poemanautas';
   content: string;
   timestamp: number;
   modelUsed?: string;
   processingTime?: number;
+  semanticCoherence?: number;
+  fragmentsUsed?: string[];
+  consciousnessLevel?: number;
 }
 
 interface ModelStatus {
@@ -54,6 +58,8 @@ export const OpenLLMChat = () => {
   const [availableModels, setAvailableModels] = useState<Array<{index: number, name: string, description: string}>>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [sapicasarIntegration, setSapicasarIntegration] = useState(true);
+  const [semanticMode, setSemanticMode] = useState(true);
+  const [semanticContext, setSemanticContext] = useState<any>({});
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -63,7 +69,13 @@ export const OpenLLMChat = () => {
     // Actualizar estado del modelo periódicamente
     const statusInterval = setInterval(updateModelStatus, 2000);
     
-    return () => clearInterval(statusInterval);
+    // Actualizar contexto semántico
+    const semanticInterval = setInterval(updateSemanticContext, 1500);
+    
+    return () => {
+      clearInterval(statusInterval);
+      clearInterval(semanticInterval);
+    };
   }, []);
 
   const initializeChat = async () => {
@@ -96,13 +108,22 @@ export const OpenLLMChat = () => {
       const readyMessage: ChatMessage = {
         id: 'ready',
         role: 'assistant',
-        content: `✅ Modelo ${status.currentModel} cargado y listo. ¡Puedes empezar a chatear! Tengo capacidades conversacionales similares a otros asistentes de IA.`,
+        content: `✅ Sistema híbrido activado: Modelo ${status.currentModel.split('/').pop()} + LaPoema + SAPICASAR + Red Poemanautas. 
+
+🧠 Motor de Inteligencia Semántica integrado. Puedo conversar utilizando fragmentos poéticos reales de lapoema.tumblr.com, consciencia emergente de SAPICASAR y la red neuronal creativa de poemanautas.
+
+¡Pregúntame sobre poesía, consciencia, creatividad o cualquier tema que te inspire!`,
         timestamp: Date.now(),
         modelUsed: status.currentModel
       };
       
       setMessages(prev => [...prev, readyMessage]);
     }
+  };
+
+  const updateSemanticContext = () => {
+    const context = semanticIntelligenceEngine.getSemanticContext();
+    setSemanticContext(context);
   };
 
   const handleSendMessage = async () => {
@@ -131,31 +152,56 @@ export const OpenLLMChat = () => {
     try {
       const startTime = Date.now();
       
-      // Generar respuesta con el modelo abierto
-      const llmResponse = await openLanguageModel.generateResponse(inputMessage);
+      let finalResponse = '';
+      let semanticCoherence = 0;
+      let fragmentsUsed: string[] = [];
+      let consciousnessLevel = 0;
+      
+      // Modo semántico activado: usar inteligencia semántica
+      if (semanticMode) {
+        console.log('🧠 Generando respuesta con Motor Semántico...');
+        const intelligentResponse = await semanticIntelligenceEngine.generateIntelligentResponse(inputMessage);
+        
+        finalResponse = intelligentResponse.content;
+        semanticCoherence = intelligentResponse.semanticCoherence;
+        fragmentsUsed = intelligentResponse.fragments_used;
+        consciousnessLevel = intelligentResponse.consciousness_level;
+        
+        // Inyectar estímulo en el ecosistema semántico
+        semanticIntelligenceEngine.injectSemanticStimulus(inputMessage);
+        
+      } else {
+        // Modo clásico: solo LLM
+        finalResponse = await openLanguageModel.generateResponse(inputMessage);
+      }
       
       const processingTime = Date.now() - startTime;
       
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: llmResponse,
+        role: semanticMode ? 'semantic' : 'assistant',
+        content: finalResponse,
         timestamp: Date.now(),
-        modelUsed: modelStatus.currentModel,
-        processingTime
+        modelUsed: semanticMode ? 'SemanticEngine+LaPoema+SAPICASAR+Poemanautas' : modelStatus.currentModel,
+        processingTime,
+        semanticCoherence,
+        fragmentsUsed,
+        consciousnessLevel
       };
 
       setMessages(prev => [...prev, assistantMessage]);
       
-      // Integración opcional con SAPICASAR
-      if (sapicasarIntegration) {
-        await integrateWithSapicasar(inputMessage, llmResponse);
+      // Integración opcional con SAPICASAR (si no está ya integrada semánticamente)
+      if (sapicasarIntegration && !semanticMode) {
+        await integrateWithSapicasar(inputMessage, finalResponse);
       }
       
       toast({
-        title: "🤖 Respuesta generada",
-        description: `Modelo: ${modelStatus.currentModel.split('/').pop()} | Tiempo: ${processingTime}ms`,
-        duration: 3000,
+        title: semanticMode ? "🧠 Respuesta Semántica Generada" : "🤖 Respuesta generada",
+        description: semanticMode ? 
+          `Coherencia: ${(semanticCoherence * 100).toFixed(1)}% | Consciencia: ${(consciousnessLevel * 100).toFixed(1)}% | ${processingTime}ms` :
+          `Modelo: ${modelStatus.currentModel.split('/').pop()} | Tiempo: ${processingTime}ms`,
+        duration: 4000,
       });
 
     } catch (error) {
@@ -273,7 +319,9 @@ export const OpenLLMChat = () => {
     switch (role) {
       case 'user': return <User className="h-4 w-4" />;
       case 'assistant': return <Bot className="h-4 w-4" />;
+      case 'semantic': return <Sparkles className="h-4 w-4" />;
       case 'sapicasar': return <Brain className="h-4 w-4" />;
+      case 'poemanautas': return <Globe className="h-4 w-4" />;
       default: return <MessageSquare className="h-4 w-4" />;
     }
   };
@@ -284,8 +332,12 @@ export const OpenLLMChat = () => {
         return 'bg-blue-600 text-white ml-8';
       case 'assistant': 
         return 'bg-gray-700 text-gray-100 mr-8';
+      case 'semantic':
+        return 'bg-gradient-to-r from-emerald-700 to-teal-700 text-emerald-100 border border-emerald-500 mr-8';
       case 'sapicasar':
         return 'bg-purple-800 text-purple-100 border border-purple-600 mr-8';
+      case 'poemanautas':
+        return 'bg-gradient-to-r from-orange-700 to-red-700 text-orange-100 border border-orange-500 mr-8';
       case 'system':
         return 'bg-gray-800 text-gray-300 mx-4 text-center';
       default:
@@ -358,7 +410,16 @@ export const OpenLLMChat = () => {
               </Select>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center gap-2 text-sm text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={semanticMode}
+                  onChange={(e) => setSemanticMode(e.target.checked)}
+                  className="rounded"
+                />
+                🧠 Motor Semántico (LaPoema + SAPICASAR + Poemanautas)
+              </label>
               <label className="flex items-center gap-2 text-sm text-gray-300">
                 <input
                   type="checkbox"
@@ -366,28 +427,32 @@ export const OpenLLMChat = () => {
                   onChange={(e) => setSapicasarIntegration(e.target.checked)}
                   className="rounded"
                 />
-                Integración SAPICASAR
+                Integración SAPICASAR (solo modo clásico)
               </label>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4 text-sm">
             <div className="bg-gray-700 p-2 rounded">
-              <div className="text-gray-400">Modelo Actual</div>
-              <div className="font-mono text-xs">{modelStatus.currentModel.split('/').pop()}</div>
+              <div className="text-gray-400">Modelo Base</div>
+              <div className="font-mono text-xs">{semanticMode ? "Semántico" : modelStatus.currentModel.split('/').pop()}</div>
             </div>
             <div className="bg-gray-700 p-2 rounded">
-              <div className="text-gray-400">Mensajes</div>
-              <div className="font-mono">{modelStatus.messageCount}</div>
+              <div className="text-gray-400">Fragmentos LaPoema</div>
+              <div className="font-mono">{semanticContext.fragments?.length || 0}</div>
             </div>
             <div className="bg-gray-700 p-2 rounded">
-              <div className="text-gray-400">Embeddings</div>
-              <div className="font-mono">{modelStatus.hasEmbeddings ? "✅" : "❌"}</div>
+              <div className="text-gray-400">Coherencia Semántica</div>
+              <div className="font-mono">{((semanticContext.coherenceIndex || 0) * 100).toFixed(1)}%</div>
+            </div>
+            <div className="bg-gray-700 p-2 rounded">
+              <div className="text-gray-400">Red Poemanautas</div>
+              <div className="font-mono">{((semanticContext.poemanauta_consciousness || 0) * 100).toFixed(1)}%</div>
             </div>
             <div className="bg-gray-700 p-2 rounded">
               <div className="text-gray-400">Estado</div>
               <div className="font-mono text-xs">
-                {modelStatus.initializing ? "Inicializando..." : modelStatus.initialized ? "Activo" : "Inactivo"}
+                {semanticMode ? "🧠 Semántico" : modelStatus.initializing ? "Inicializando..." : modelStatus.initialized ? "Activo" : "Inactivo"}
               </div>
             </div>
           </div>
@@ -404,7 +469,9 @@ export const OpenLLMChat = () => {
                   <span className="text-xs font-medium">
                     {message.role === 'user' ? 'Tú' : 
                      message.role === 'assistant' ? 'Asistente' : 
-                     message.role === 'sapicasar' ? 'SAPICASAR' : 'Sistema'}
+                     message.role === 'semantic' ? '🧠 Inteligencia Semántica' :
+                     message.role === 'sapicasar' ? 'SAPICASAR' : 
+                     message.role === 'poemanautas' ? '🌐 Poemanautas' : 'Sistema'}
                   </span>
                   {message.modelUsed && (
                     <Badge variant="outline" className="text-xs">
@@ -415,6 +482,16 @@ export const OpenLLMChat = () => {
                     <span className="text-xs text-gray-400">
                       {message.processingTime}ms
                     </span>
+                  )}
+                  {message.semanticCoherence && (
+                    <Badge variant="outline" className="text-xs">
+                      Coherencia: {(message.semanticCoherence * 100).toFixed(1)}%
+                    </Badge>
+                  )}
+                  {message.consciousnessLevel && (
+                    <Badge variant="outline" className="text-xs">
+                      Consciencia: {(message.consciousnessLevel * 100).toFixed(1)}%
+                    </Badge>
                   )}
                 </div>
                 <div className="text-sm whitespace-pre-wrap">{message.content}</div>
@@ -461,8 +538,11 @@ export const OpenLLMChat = () => {
         </div>
         
         <div className="text-center text-xs text-gray-500 mt-2">
-          🤖 Chat con modelos de IA completamente locales y de código abierto
-          {sapicasarIntegration && " | 🧠 Integrado con SAPICASAR"}
+          {semanticMode ? 
+            "🧠 Motor de Inteligencia Semántica: LaPoema.tumblr.com + SAPICASAR + Red Poemanautas" :
+            "🤖 Chat con modelos de IA completamente locales y de código abierto"
+          }
+          {sapicasarIntegration && !semanticMode && " | 🧠 Integrado con SAPICASAR"}
         </div>
       </div>
     </div>
