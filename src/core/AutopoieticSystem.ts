@@ -370,7 +370,24 @@ class AutopoieticSystem {
 
   // API pública
   public getAutopoieticState(): AutopoieticState {
-    return JSON.parse(JSON.stringify(this.state));
+    // Deep clone preserving Map objects
+    return {
+      components: new Map(this.state.components),
+      organization: {
+        production_network: new Map(this.state.organization.production_network),
+        maintenance_processes: new Map(this.state.organization.maintenance_processes),
+        boundary_conditions: {
+          permeability: this.state.organization.boundary_conditions.permeability,
+          selective_interactions: [...this.state.organization.boundary_conditions.selective_interactions],
+          internal_medium: new Map(this.state.organization.boundary_conditions.internal_medium)
+        },
+        operational_closure: this.state.organization.operational_closure
+      },
+      viability: this.state.viability,
+      structural_coupling: this.state.structural_coupling,
+      evolutionary_drift: this.state.evolutionary_drift,
+      organizational_invariance: this.state.organizational_invariance
+    };
   }
 
   public getViabilityMetrics() {
