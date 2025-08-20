@@ -9,6 +9,10 @@ import { useToast } from '../hooks/use-toast';
 import { openLanguageModel } from '../core/OpenLanguageModel';
 import { sapicasarConsciousness } from '../core/SapicasarConsciousness';
 import { semanticIntelligenceEngine } from '../core/SemanticIntelligenceEngine';
+import { collectiveMemoryEngine } from '../core/CollectiveMemoryEngine';
+import { metapoeticOperationsEngine } from '../core/MetapoeticOperationsEngine';
+import { cyberneticPoemanauta } from '../core/CyberneticPoemanauta';
+import { localNLPEngine } from '../core/LocalNLPEngine';
 import { 
   MessageSquare, 
   Bot, 
@@ -20,7 +24,10 @@ import {
   Brain,
   Sparkles,
   Globe,
-  Trash2
+  Trash2,
+  Network,
+  Layers,
+  Target
 } from 'lucide-react';
 
 interface ChatMessage {
