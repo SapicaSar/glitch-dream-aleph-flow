@@ -260,6 +260,7 @@ class MetapoeticOperationsEngine {
     return hybridized;
   }
 
+  private async performDiscourseInjection(text: string, intensity: number, metaContext?: string): Promise<string> {
     // Inyectar fragmentos discursivos de lapoema.tumblr.com
     try {
       const fragment = await poemaScrapingService.getRandomFragment();
@@ -288,6 +289,7 @@ class MetapoeticOperationsEngine {
       console.warn('🎭⚠️ Error en inyección discursiva:', error);
       return text;
     }
+  }
 
   private extractCorePhrase(content: string): string {
     // Extraer la frase más poética/significativa del contenido
