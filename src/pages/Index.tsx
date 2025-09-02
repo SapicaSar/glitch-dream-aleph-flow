@@ -1,12 +1,7 @@
-import { FluidDialogueInterface } from '../components/FluidDialogueInterface';
-import { ProfessionalBackgroundSystem } from '../components/ProfessionalBackgroundSystem';
+import { OrganicDialogueInterface } from '../components/OrganicDialogueInterface';
 
 const Index = () => {
-  return (
-    <ProfessionalBackgroundSystem>
-      <FluidDialogueInterface />
-    </ProfessionalBackgroundSystem>
-  );
+  return <OrganicDialogueInterface />;
 };
 
 export default Index;
