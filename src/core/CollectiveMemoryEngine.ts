@@ -464,13 +464,21 @@ class CollectiveMemoryEngine {
   }
 
   public exportMemorySnapshot() {
+    // Get recent interactions from memory nodes
+    const recentInteractions = Array.from(this.memory_nodes.values())
+      .filter(node => node.id.includes('conv_'))
+      .sort((a, b) => b.last_activation - a.last_activation)
+      .slice(0, 10)
+      .map(node => node.content);
+
     return {
       timestamp: Date.now(),
       total_nodes: this.memory_nodes.size,
       total_conversations: this.collective_knowledge.total_conversations,
       consciousness_level: this.collective_knowledge.collective_consciousness_level,
       semantic_clusters: this.collective_knowledge.semantic_clusters.size,
-      emergent_patterns: this.collective_knowledge.emergent_patterns.size
+      emergent_patterns: this.collective_knowledge.emergent_patterns.size,
+      recent_interactions: recentInteractions
     };
   }
 }
