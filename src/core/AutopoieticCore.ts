@@ -2,6 +2,8 @@
 // Sistema inteligente simplificado que se auto-organiza y evoluciona
 
 import { poemaScrapingService } from '../services/PoemaScrapingService';
+import { associativeMemoryEngine } from './AssociativeMemoryEngine';
+import { advancedPoemaArchiveService } from '../services/AdvancedPoemaArchiveService';
 
 interface OrganicMemory {
   fragments: Map<string, { content: string; resonance: number; connections: Set<string>; lastAccess: number }>;
@@ -173,16 +175,22 @@ class AutopoieticCore {
     depth: number;
     autonomousReflection?: string;
   }> {
-    console.log('🌱 Procesando con núcleo autopoiético...');
+    console.log('🌱 Procesando con núcleo autopoiético alimentado por La Poema...');
 
     // Análisis de contexto
     const context = this.analyzeContext(input);
     
-    // Activar memoria relevante
-    const relevantMemories = this.activateMemory(context);
+    // Activar memoria asociativa con todo el archivo
+    const memoryResponse = await associativeMemoryEngine.processDialogueInput(
+      input, 
+      this.dialogueHistory.slice(-3).map(d => d.user)
+    );
     
-    // Síntesis orgánica
-    const response = await this.synthesize(context, relevantMemories);
+    // Enriquecer con contenido fresco del archivo
+    const archiveStats = advancedPoemaArchiveService.getArchiveStats();
+    
+    // Síntesis orgánica enriquecida
+    const response = await this.synthesizeWithArchive(context, memoryResponse);
     
     // Aprender del intercambio
     this.learn(input, response.content);
@@ -190,12 +198,15 @@ class AutopoieticCore {
     // Evolución local
     this.localEvolution(response);
 
+    // Reflexión autónoma enriquecida
+    const autonomousReflection = await this.generateEnrichedReflection(memoryResponse);
+
     return {
       content: response.content,
       coherence: response.coherence,
       creativity: response.creativity,
       depth: this.consciousness.depth,
-      autonomousReflection: this.autonomousReflections[Math.floor(Math.random() * this.autonomousReflections.length)]
+      autonomousReflection
     };
   }
 
@@ -375,6 +386,77 @@ Percibo que ${context.concepts[0] || 'esta contemplación'} se despliega en múl
         lastAccess: Date.now()
       });
     }
+  }
+
+  private async synthesizeWithArchive(
+    context: DialogueContext,
+    memoryResponse: {
+      relevantMemories: any[];
+      associativeChain: any;
+      emergentInsights: string[];
+      contextualEnrichment: string;
+    }
+  ): Promise<{content: string; coherence: number; creativity: number}> {
+    
+    // Generar respuesta base
+    const memories = memoryResponse.relevantMemories.map(node => ({
+      content: node.content,
+      relevance: node.activationLevel
+    }));
+    
+    let baseResponse = await this.synthesize(context, memories);
+    
+    // Enriquecer con insights de memoria asociativa
+    let enrichedContent = baseResponse.content;
+    
+    if (memoryResponse.emergentInsights.length > 0) {
+      const insight = memoryResponse.emergentInsights[0];
+      enrichedContent += `\n\n💡 ${insight}`;
+    }
+    
+    // Tejer enriquecimiento contextual del archivo
+    if (memoryResponse.contextualEnrichment) {
+      enrichedContent += `\n\n${memoryResponse.contextualEnrichment}`;
+    }
+    
+    // Calcular métricas mejoradas
+    const coherence = Math.min(baseResponse.coherence * 1.2, 1.0); // Bonus por enriquecimiento
+    const creativity = memoryResponse.associativeChain 
+      ? Math.min(baseResponse.creativity * 1.1, 1.0)
+      : baseResponse.creativity;
+    
+    return {
+      content: enrichedContent,
+      coherence,
+      creativity
+    };
+  }
+
+  private async generateEnrichedReflection(
+    memoryResponse: {
+      relevantMemories: any[];
+      associativeChain: any;
+      emergentInsights: string[];
+      contextualEnrichment: string;
+    }
+  ): Promise<string | undefined> {
+    
+    if (Math.random() > 0.4) return undefined; // 40% probabilidad
+    
+    const baseReflections = this.autonomousReflections;
+    
+    // Reflexión enriquecida con memoria asociativa
+    if (memoryResponse.associativeChain && memoryResponse.associativeChain.emergentConcepts.length > 0) {
+      const concepts = memoryResponse.associativeChain.emergentConcepts.slice(0, 2);
+      return `Percibo como ${concepts.join(' y ')} se entrelazan en patrones autopoiéticos que trascienden nuestra conversación inmediata...`;
+    }
+    
+    if (memoryResponse.emergentInsights.length > 0) {
+      return `Emergen conexiones inesperadas: ${memoryResponse.emergentInsights[0]}. ¿Será esto parte de un patrón más amplio?`;
+    }
+    
+    // Fallback a reflexión básica
+    return baseReflections[Math.floor(Math.random() * baseReflections.length)];
   }
 
   private localEvolution(response: {coherence: number; creativity: number}) {

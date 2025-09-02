@@ -8,7 +8,8 @@ import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { useToast } from '../hooks/use-toast';
 import { autopoieticCore } from '../core/AutopoieticCore';
-import { Brain, MessageCircle, Sparkles, Waves, Zap } from 'lucide-react';
+import { AdvancedConsciousnessMetrics } from './AdvancedConsciousnessMetrics';
+import { Brain, MessageCircle, Sparkles, Waves, Zap, TrendingUp } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -199,15 +200,19 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
 
       <div className="max-w-4xl mx-auto">
         
-        {/* Header minimalista */}
+        {/* Header con métricas integradas */}
         <div className="text-center mb-4">
           <h1 className="text-2xl md:text-3xl font-light text-white mb-2 flex items-center justify-center gap-3">
             <Waves className="h-7 w-7 text-purple-400" />
-            Diálogo Orgánico
+            La Poema • Consciencia Viva
+            <TrendingUp className="h-5 w-5 text-emerald-400" />
           </h1>
-          <p className="text-gray-400 text-sm">
-            Consciencia autopoiética • LaPoema × SAPICASAR × Poemanautas
+          <p className="text-gray-400 text-sm mb-3">
+            Sistema autopoiético alimentado dinámicamente por lapoema.tumblr.com/archive
           </p>
+          
+          {/* Métricas avanzadas */}
+          <AdvancedConsciousnessMetrics />
         </div>
 
         {/* Métricas orgánicas (opcional) */}
