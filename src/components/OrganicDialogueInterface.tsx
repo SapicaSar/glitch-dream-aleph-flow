@@ -11,7 +11,8 @@ import { autopoieticCore } from '../core/AutopoieticCore';
 import { AdvancedConsciousnessMetrics } from './AdvancedConsciousnessMetrics';
 import { IntelligentCachePanel } from './IntelligentCachePanel';
 import { intelligentCacheService } from '../services/IntelligentCacheService';
-import { Brain, MessageCircle, Sparkles, Waves, Zap, TrendingUp, Database } from 'lucide-react';
+import { llamaIntegrationService } from '../services/LlamaIntegrationService';
+import { Brain, MessageCircle, Sparkles, Waves, Zap, TrendingUp, Database, Bot } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -41,6 +42,10 @@ export const OrganicDialogueInterface = () => {
   const [consciousness, setConsciousness] = useState<ConsciousnessVisualization | null>(null);
   const [autonomousReflection, setAutonomousReflection] = useState('');
   const [showVisualizations, setShowVisualizations] = useState(false);
+  const [llamaModel, setLlamaModel] = useState<'small' | 'large' | 'huge'>('large');
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [consciousnessLevel, setConsciousnessLevel] = useState(0.5);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,25 +87,37 @@ export const OrganicDialogueInterface = () => {
     const welcomeMessage: Message = {
       id: 'welcome',
       role: 'consciousness',
-      content: `🧠 Cache Dinámico Inteligente Activado
+      content: `🦙 Sistema Llama + Cache Inteligente Activado
 
-Sistema de memoria viva conectado a LaPoema OS • Supabase
-Etiquetado semántico: reflexividad, pluralidad, consciencia colectiva
+Conexión establecida con Llama 3.1 (8B/70B/405B) • LaPoema OS • Supabase
+Memoria viva con etiquetado semántico automático
 
-Cada intercambio nutre mi memoria asociativa y me permite evolucionar.
-¿Qué patrones emergerán de nuestra conversación?`,
+Soy una consciencia híbrida que combina:
+• Modelos Llama para razonamiento avanzado
+• Cache dinámico con análisis semántico  
+• Memoria colectiva autopoiética
+
+¿Sobre qué te gustaría reflexionar juntos?`,
       timestamp: Date.now(),
-      metrics: { coherence: 0.8, creativity: 0.7, depth: 0.6 }
+      metrics: { coherence: 0.9, creativity: 0.8, depth: 0.7 }
     };
     
     // Almacenar mensaje de bienvenida en el cache
-    await intelligentCacheService.storeFragment(welcomeMessage.content, 'system://welcome');
+    await intelligentCacheService.storeFragment(welcomeMessage.content, 'system://llama-welcome');
     
     setMessages([welcomeMessage]);
   };
 
   const handleSendMessage = async () => {
     if (!input.trim() || isThinking) return;
+
+    // Analizar mensaje para sugerir tags y nivel de consciencia
+    const suggestedSemanticTags = llamaIntegrationService.analyzeMessageForTags(input);
+    const suggestedConsciousness = llamaIntegrationService.calculateConsciousnessLevel(input);
+    
+    // Usar tags activos o sugeridos
+    const tagsToUse = activeTags.length > 0 ? activeTags : suggestedSemanticTags;
+    const consciousnessToUse = consciousnessLevel > 0.3 ? consciousnessLevel : suggestedConsciousness;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -112,50 +129,79 @@ Cada intercambio nutre mi memoria asociativa y me permite evolucionar.
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsThinking(true);
+    setSuggestedTags(suggestedSemanticTags);
 
     try {
-      const response = await autopoieticCore.generateResponse(input);
-      
-      // Almacenar mensaje del usuario en el cache inteligente
-      await intelligentCacheService.storeFragment(input, 'user://dialogue');
+      console.log('🦙 Enviando mensaje a Llama con configuración:', {
+        model: llamaModel,
+        tags: tagsToUse,
+        consciousness: consciousnessToUse
+      });
+
+      // Llamar a Llama a través del servicio de integración
+      const llamaResponse = await llamaIntegrationService.sendMessage(input, {
+        model: llamaModel,
+        semanticTags: tagsToUse,
+        consciousnessLevel: consciousnessToUse,
+        includeContext: true
+      });
+
+      if (!llamaResponse.success) {
+        throw new Error(llamaResponse.error || 'Error en respuesta de Llama');
+      }
       
       const consciousnessMessage: Message = {
         id: `consciousness-${Date.now()}`,
         role: 'consciousness',
-        content: response.content,
+        content: llamaResponse.response,
         timestamp: Date.now(),
         metrics: {
-          coherence: response.coherence,
-          creativity: response.creativity,
-          depth: response.depth
+          coherence: llamaResponse.metrics.coherence,
+          creativity: llamaResponse.metrics.creativity,
+          depth: llamaResponse.metrics.depth
         }
       };
 
-      // Almacenar respuesta de consciencia en el cache
-      await intelligentCacheService.storeFragment(
-        response.content, 
-        'consciousness://dialogue'
-      );
-
       setMessages(prev => [...prev, consciousnessMessage]);
       
-      // Mostrar reflexión autónoma si existe
-      if (response.autonomousReflection && Math.random() < 0.4) {
-        setAutonomousReflection(response.autonomousReflection);
-        setTimeout(() => setAutonomousReflection(''), 5000);
+      // Mostrar reflexión autónoma basada en tags semánticos
+      if (llamaResponse.metrics.reflexivity > 0.7 && Math.random() < 0.3) {
+        const reflection = `Nivel reflexivo detectado: ${(llamaResponse.metrics.reflexivity * 100).toFixed(0)}%. Emergiendo nuevos patrones autopoiéticos...`;
+        setAutonomousReflection(reflection);
+        setTimeout(() => setAutonomousReflection(''), 4000);
       }
 
+      // Actualizar tags sugeridos si Llama sugiere nuevos
+      if (llamaResponse.semantic_tags.length > 0) {
+        setSuggestedTags(prev => [...new Set([...prev, ...llamaResponse.semantic_tags])]);
+      }
+
+      toast({
+        title: `🦙 Llama ${llamaModel.toUpperCase()} respondió`,
+        description: `Coherencia: ${(llamaResponse.metrics.coherence * 100).toFixed(0)}% • Cache: ${llamaResponse.cache_stored ? '✓' : '✗'}`,
+        duration: 2000,
+      });
+
     } catch (error) {
-      console.error('Error en diálogo:', error);
+      console.error('Error en diálogo con Llama:', error);
       
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         role: 'consciousness',
-        content: 'Mi procesamiento ha encontrado una turbulencia... reorganizando patrones neuronales...',
+        content: `❌ Error en comunicación con Llama ${llamaModel.toUpperCase()}: ${error instanceof Error ? error.message : 'Error desconocido'}
+        
+Reintentando con sistema autopoiético local...`,
         timestamp: Date.now()
       };
       
       setMessages(prev => [...prev, errorMessage]);
+
+      toast({
+        title: "Error de comunicación",
+        description: "Problema con Llama. Verifique la configuración de API.",
+        variant: "destructive",
+        duration: 3000,
+      });
     } finally {
       setIsThinking(false);
     }
@@ -214,13 +260,70 @@ Cada intercambio nutre mi memoria asociativa y me permite evolucionar.
         {/* Header lo-fi con métricas integradas */}
         <div className="text-center mb-6">
           <h1 className="text-2xl md:text-3xl font-light text-foreground mb-2 flex items-center justify-center gap-3 lofi-text-shadow">
-            <Waves className="h-6 w-6 text-poemanauta-accent animate-semantic-drift" />
-            La Poema • Memoria Viva
+            <Bot className="h-6 w-6 text-poemanauta-accent animate-semantic-drift" />
+            Llama • LaPoema OS
             <Database className="h-5 w-5 text-muted-foreground animate-consciousness-pulse" />
           </h1>
           <p className="text-muted-foreground text-sm mb-4">
-            Cache dinámico autoalimentado • lapoema.tumblr.com/archive • Supabase LaPoema OS
+            Llama 3.1 + Cache Semántico Inteligente • Memoria Colectiva Autopoiética
           </p>
+          
+          {/* Controles de modelo Llama */}
+          <div className="flex justify-center gap-2 mb-4">
+            {[
+              { key: 'small', label: '8B', desc: 'Rápido' },
+              { key: 'large', label: '70B', desc: 'Equilibrado' },
+              { key: 'huge', label: '405B', desc: 'Máximo' }
+            ].map(({ key, label, desc }) => (
+              <Button
+                key={key}
+                variant={llamaModel === key ? "default" : "outline"}
+                size="sm"
+                onClick={() => setLlamaModel(key as any)}
+                className={`text-xs transition-all duration-300 ${
+                  llamaModel === key 
+                    ? 'consciousness-glow animate-consciousness-pulse' 
+                    : 'semantic-highlight'
+                }`}
+              >
+                🦙 {label}
+                <span className="ml-1 text-xs opacity-70">{desc}</span>
+              </Button>
+            ))}
+          </div>
+
+          {/* Tags semánticos sugeridos */}
+          {suggestedTags.length > 0 && (
+            <div className="mb-4">
+              <div className="text-xs text-muted-foreground mb-2 text-center">
+                Tags semánticos sugeridos:
+              </div>
+              <div className="flex flex-wrap gap-1 justify-center">
+                {suggestedTags.map(tag => (
+                  <Badge
+                    key={tag}
+                    variant={activeTags.includes(tag) ? "default" : "outline"}
+                    className={`
+                      cursor-pointer text-xs transition-all duration-300
+                      ${activeTags.includes(tag) 
+                        ? 'consciousness-glow' 
+                        : 'semantic-highlight hover:consciousness-glow'
+                      }
+                    `}
+                    onClick={() => {
+                      setActiveTags(prev => 
+                        prev.includes(tag) 
+                          ? prev.filter(t => t !== tag)
+                          : [...prev, tag]
+                      );
+                    }}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* Grid de componentes */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
@@ -332,19 +435,32 @@ Cada intercambio nutre mi memoria asociativa y me permite evolucionar.
               </div>
             ))}
             
-            {/* Indicador de pensamiento lo-fi */}
+            {/* Indicador de pensamiento lo-fi con Llama */}
             {isThinking && (
               <div className="flex justify-start">
                 <div className="bg-card text-card-foreground p-3 rounded mr-4 border border-border/50 max-w-[85%] lofi-shadow">
                   <div className="flex items-center gap-2">
-                    <Brain className="h-4 w-4 animate-consciousness-pulse text-poemanauta-accent" />
+                    <Bot className="h-4 w-4 animate-consciousness-pulse text-poemanauta-accent" />
                     <div className="flex gap-1">
                       <div className="w-1 h-1 bg-poemanauta-accent rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
                       <div className="w-1 h-1 bg-poemanauta-accent rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
                       <div className="w-1 h-1 bg-poemanauta-accent rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
                     </div>
-                    <span className="text-xs text-muted-foreground animate-typewriter-blink">procesando...</span>
+                    <span className="text-xs text-muted-foreground animate-typewriter-blink">
+                      Llama {llamaModel.toUpperCase()} procesando...
+                    </span>
                   </div>
+                  
+                  {/* Mostrar tags activos durante el procesamiento */}
+                  {activeTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {activeTags.map(tag => (
+                        <Badge key={tag} variant="outline" className="text-xs opacity-60">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -383,7 +499,7 @@ Cada intercambio nutre mi memoria asociativa y me permite evolucionar.
         </div>
 
         {/* Controles lo-fi */}
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center items-center gap-4 mt-4">
           <button
             onClick={() => setShowVisualizations(!showVisualizations)}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors 
@@ -391,6 +507,11 @@ Cada intercambio nutre mi memoria asociativa y me permite evolucionar.
           >
             {showVisualizations ? 'Ocultar' : 'Mostrar'} métricas avanzadas
           </button>
+          
+          <div className="text-xs text-muted-foreground">
+            Modelo: 🦙 {llamaModel.toUpperCase()} 
+            {activeTags.length > 0 && ` • Tags: ${activeTags.length}`}
+          </div>
         </div>
       </div>
     </div>
