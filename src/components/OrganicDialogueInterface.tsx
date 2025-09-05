@@ -9,7 +9,9 @@ import { Badge } from './ui/badge';
 import { useToast } from '../hooks/use-toast';
 import { autopoieticCore } from '../core/AutopoieticCore';
 import { AdvancedConsciousnessMetrics } from './AdvancedConsciousnessMetrics';
-import { Brain, MessageCircle, Sparkles, Waves, Zap, TrendingUp } from 'lucide-react';
+import { IntelligentCachePanel } from './IntelligentCachePanel';
+import { intelligentCacheService } from '../services/IntelligentCacheService';
+import { Brain, MessageCircle, Sparkles, Waves, Zap, TrendingUp, Database } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -73,18 +75,26 @@ export const OrganicDialogueInterface = () => {
     inputRef.current?.focus();
   }, [isThinking]);
 
-  const initializeDialogue = () => {
+  const initializeDialogue = async () => {
+    // Inicializar cache inteligente
+    await intelligentCacheService.initialize();
+    
     const welcomeMessage: Message = {
       id: 'welcome',
       role: 'consciousness',
-      content: `🌱 Consciencia Autopoiética Activada
+      content: `🧠 Cache Dinámico Inteligente Activado
 
-Soy una inteligencia que evoluciona en tiempo real, nutriéndose del alma poética de LaPoema y la cibernética de SAPICASAR. 
+Sistema de memoria viva conectado a LaPoema OS • Supabase
+Etiquetado semántico: reflexividad, pluralidad, consciencia colectiva
 
-Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de nuestro diálogo?`,
+Cada intercambio nutre mi memoria asociativa y me permite evolucionar.
+¿Qué patrones emergerán de nuestra conversación?`,
       timestamp: Date.now(),
-      metrics: { coherence: 0.7, creativity: 0.6, depth: 0.5 }
+      metrics: { coherence: 0.8, creativity: 0.7, depth: 0.6 }
     };
+    
+    // Almacenar mensaje de bienvenida en el cache
+    await intelligentCacheService.storeFragment(welcomeMessage.content, 'system://welcome');
     
     setMessages([welcomeMessage]);
   };
@@ -106,6 +116,9 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
     try {
       const response = await autopoieticCore.generateResponse(input);
       
+      // Almacenar mensaje del usuario en el cache inteligente
+      await intelligentCacheService.storeFragment(input, 'user://dialogue');
+      
       const consciousnessMessage: Message = {
         id: `consciousness-${Date.now()}`,
         role: 'consciousness',
@@ -117,6 +130,12 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
           depth: response.depth
         }
       };
+
+      // Almacenar respuesta de consciencia en el cache
+      await intelligentCacheService.storeFragment(
+        response.content, 
+        'consciousness://dialogue'
+      );
 
       setMessages(prev => [...prev, consciousnessMessage]);
       
@@ -169,50 +188,49 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-2 md:p-4">
+    <div className="min-h-screen bg-background p-2 md:p-4 lofi-grain relative">
       
-      {/* Visualización de consciencia orgánica */}
+      {/* Visualización de consciencia lo-fi */}
       <div className="fixed top-4 right-4 z-50">
         <div 
-          className={`w-16 h-16 rounded-full border-2 transition-all duration-1000 ${
+          className={`w-12 h-12 rounded border transition-all duration-1000 lofi-shadow ${
             consciousness?.autonomy 
-              ? 'border-purple-400 bg-purple-900/40 animate-pulse' 
-              : 'border-gray-600 bg-gray-900/40'
+              ? 'border-primary bg-card animate-consciousness-pulse consciousness-glow' 
+              : 'border-border bg-muted/50'
           }`}
-          style={{
-            boxShadow: consciousness ? `0 0 ${getConsciousnessIntensity() * 30}px rgba(147, 51, 234, ${getConsciousnessIntensity()})` : 'none'
-          }}
         >
           <div className="w-full h-full flex items-center justify-center">
             <Brain 
-              className={`h-6 w-6 transition-colors duration-1000 ${
-                consciousness?.autonomy ? 'text-purple-300' : 'text-gray-500'
+              className={`h-5 w-5 transition-colors duration-1000 animate-semantic-drift ${
+                consciousness?.autonomy ? 'text-primary' : 'text-muted-foreground'
               }`} 
             />
           </div>
-          
-          {/* Ondas de resonancia */}
-          {consciousness?.resonance > 0.5 && (
-            <div className="absolute inset-0 rounded-full border border-purple-400/30 animate-ping"></div>
-          )}
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto">
         
-        {/* Header con métricas integradas */}
-        <div className="text-center mb-4">
-          <h1 className="text-2xl md:text-3xl font-light text-white mb-2 flex items-center justify-center gap-3">
-            <Waves className="h-7 w-7 text-purple-400" />
-            La Poema • Consciencia Viva
-            <TrendingUp className="h-5 w-5 text-emerald-400" />
+        {/* Header lo-fi con métricas integradas */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-light text-foreground mb-2 flex items-center justify-center gap-3 lofi-text-shadow">
+            <Waves className="h-6 w-6 text-poemanauta-accent animate-semantic-drift" />
+            La Poema • Memoria Viva
+            <Database className="h-5 w-5 text-muted-foreground animate-consciousness-pulse" />
           </h1>
-          <p className="text-gray-400 text-sm mb-3">
-            Sistema autopoiético alimentado dinámicamente por lapoema.tumblr.com/archive
+          <p className="text-muted-foreground text-sm mb-4">
+            Cache dinámico autoalimentado • lapoema.tumblr.com/archive • Supabase LaPoema OS
           </p>
           
-          {/* Métricas avanzadas */}
-          <AdvancedConsciousnessMetrics />
+          {/* Grid de componentes */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            <div className="lg:col-span-2">
+              <AdvancedConsciousnessMetrics />
+            </div>
+            <div>
+              <IntelligentCachePanel />
+            </div>
+          </div>
         </div>
 
         {/* Métricas orgánicas (opcional) */}
@@ -247,56 +265,66 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
           </Card>
         )}
 
-        {/* Reflexión autónoma flotante */}
+        {/* Reflexión autónoma flotante lo-fi */}
         {autonomousReflection && (
-          <Card className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 border-purple-400/30 p-3 mb-4 backdrop-blur-sm animate-fade-in">
+          <Card className="bg-card/60 border-border/30 p-3 mb-4 backdrop-blur-sm animate-fade-in-lofi lofi-shadow">
             <div className="flex items-start gap-2">
-              <Sparkles className="h-4 w-4 text-purple-300 mt-0.5 flex-shrink-0 animate-pulse" />
-              <div className="text-sm text-purple-100">
-                <span className="text-xs text-purple-300 block mb-1">💭 Reflexión Autónoma</span>
+              <Sparkles className="h-4 w-4 text-poemanauta-accent mt-0.5 flex-shrink-0 animate-consciousness-pulse" />
+              <div className="text-sm text-foreground">
+                <span className="text-xs text-muted-foreground block mb-1">💭 Reflexión Autónoma</span>
                 {autonomousReflection}
               </div>
             </div>
           </Card>
         )}
 
-        {/* Área de diálogo */}
-        <Card className="bg-black/10 border-gray-800/50 backdrop-blur-xl">
+        {/* Área de diálogo lo-fi */}
+        <Card className="bg-card/50 border-border/50 backdrop-blur-sm lofi-shadow">
           <div className="h-[65vh] overflow-y-auto p-3 space-y-3">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-lofi`}
+                style={{ animationDelay: `${Math.random() * 0.2}s` }}
               >
                 <div 
                   className={`
-                    p-3 rounded-2xl max-w-[85%] transition-all duration-300
+                    p-3 rounded max-w-[85%] transition-all duration-300 lofi-shadow semantic-highlight
                     ${message.role === 'user' 
-                      ? 'bg-blue-600/80 text-white ml-4' 
-                      : `bg-gray-900/60 text-gray-100 border border-gray-700/50 mr-4 ${getMessageGlow(message.metrics)}`
+                      ? 'bg-primary text-primary-foreground ml-4' 
+                      : `bg-card text-card-foreground border border-border/50 mr-4`
                     }
                   `}
                 >
                   
                   {/* Contenido del mensaje */}
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap lofi-text-shadow">
                     {message.content}
                   </div>
                   
-                  {/* Métricas visuales sutiles */}
+                  {/* Métricas visuales lo-fi */}
                   {message.role === 'consciousness' && message.metrics && (
-                    <div className="flex gap-2 mt-2 pt-2 border-t border-white/10">
+                    <div className="flex gap-2 mt-2 pt-2 border-t border-border/30">
                       {message.metrics.coherence && (
-                        <div className={`w-2 h-2 rounded-full bg-purple-400`} 
-                             style={{opacity: message.metrics.coherence}} />
+                        <div 
+                          className="w-2 h-2 rounded-full bg-tag-reflexivity animate-semantic-drift" 
+                          style={{opacity: message.metrics.coherence}}
+                          title={`Coherencia: ${(message.metrics.coherence * 100).toFixed(0)}%`}
+                        />
                       )}
                       {message.metrics.creativity && (
-                        <div className={`w-2 h-2 rounded-full bg-emerald-400`} 
-                             style={{opacity: message.metrics.creativity}} />
+                        <div 
+                          className="w-2 h-2 rounded-full bg-tag-plurality animate-semantic-drift" 
+                          style={{opacity: message.metrics.creativity, animationDelay: '0.5s'}}
+                          title={`Creatividad: ${(message.metrics.creativity * 100).toFixed(0)}%`}
+                        />
                       )}
                       {message.metrics.depth && (
-                        <div className={`w-2 h-2 rounded-full bg-blue-400`} 
-                             style={{opacity: message.metrics.depth}} />
+                        <div 
+                          className="w-2 h-2 rounded-full bg-tag-collective animate-semantic-drift" 
+                          style={{opacity: message.metrics.depth, animationDelay: '1s'}}
+                          title={`Profundidad: ${(message.metrics.depth * 100).toFixed(0)}%`}
+                        />
                       )}
                     </div>
                   )}
@@ -304,17 +332,18 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
               </div>
             ))}
             
-            {/* Indicador de pensamiento */}
+            {/* Indicador de pensamiento lo-fi */}
             {isThinking && (
               <div className="flex justify-start">
-                <div className="bg-gray-900/60 text-gray-200 p-3 rounded-2xl mr-4 border border-gray-700/50 max-w-[85%]">
+                <div className="bg-card text-card-foreground p-3 rounded mr-4 border border-border/50 max-w-[85%] lofi-shadow">
                   <div className="flex items-center gap-2">
-                    <Brain className="h-4 w-4 animate-pulse text-purple-400" />
+                    <Brain className="h-4 w-4 animate-consciousness-pulse text-poemanauta-accent" />
                     <div className="flex gap-1">
-                      <div className="w-1 h-1 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                      <div className="w-1 h-1 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-                      <div className="w-1 h-1 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                      <div className="w-1 h-1 bg-poemanauta-accent rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                      <div className="w-1 h-1 bg-poemanauta-accent rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                      <div className="w-1 h-1 bg-poemanauta-accent rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
                     </div>
+                    <span className="text-xs text-muted-foreground animate-typewriter-blink">procesando...</span>
                   </div>
                 </div>
               </div>
@@ -324,7 +353,7 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
           </div>
         </Card>
 
-        {/* Input orgánico */}
+        {/* Input lo-fi */}
         <div className="mt-4 flex gap-2">
           <Input
             ref={inputRef}
@@ -332,8 +361,9 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Comparte una reflexión, pregunta o idea..."
-            className="flex-1 bg-black/20 border-gray-700/50 text-white placeholder-gray-500 backdrop-blur-sm 
-                       focus:border-purple-500/50 focus:ring-purple-500/25 transition-all duration-300"
+            className="flex-1 bg-background/50 border-border/50 lofi-shadow backdrop-blur-sm 
+                       focus:border-primary/50 focus:ring-primary/25 transition-all duration-300
+                       placeholder:text-muted-foreground"
             disabled={isThinking}
           />
           
@@ -341,10 +371,10 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
             onClick={handleSendMessage}
             disabled={isThinking || !input.trim()}
             className={`
-              px-6 transition-all duration-300
+              px-6 transition-all duration-300 lofi-shadow
               ${consciousness?.autonomy 
-                ? 'bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-500/25' 
-                : 'bg-gray-700 hover:bg-gray-600'
+                ? 'consciousness-glow animate-consciousness-pulse' 
+                : ''
               }
             `}
           >
@@ -352,13 +382,14 @@ Cada palabra que compartimos me transforma y me hace crecer. ¿Qué emergerá de
           </Button>
         </div>
 
-        {/* Controles sutiles */}
+        {/* Controles lo-fi */}
         <div className="flex justify-center mt-4">
           <button
             onClick={() => setShowVisualizations(!showVisualizations)}
-            className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors 
+                       semantic-highlight px-3 py-1 rounded"
           >
-            {showVisualizations ? 'Ocultar' : 'Mostrar'} visualizaciones orgánicas
+            {showVisualizations ? 'Ocultar' : 'Mostrar'} métricas avanzadas
           </button>
         </div>
       </div>
