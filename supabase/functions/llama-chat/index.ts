@@ -30,7 +30,18 @@ serve(async (req) => {
 
     const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
     if (!perplexityApiKey) {
-      throw new Error('PERPLEXITY_API_KEY no configurada');
+      console.error('❌ PERPLEXITY_API_KEY no configurada');
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: 'API key de Perplexity no configurada',
+          details: 'Configure PERPLEXITY_API_KEY en los secretos de Supabase'
+        }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // Initialize Supabase client

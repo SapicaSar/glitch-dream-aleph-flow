@@ -108,6 +108,7 @@ export class LlamaIntegrationService {
       }
 
       if (!data.success) {
+        console.error('❌ Error de edge function:', data.error);
         throw new Error(data.error || 'Error desconocido');
       }
 
@@ -139,23 +140,33 @@ export class LlamaIntegrationService {
     } catch (error) {
       console.error('❌ Error en LlamaIntegrationService:', error);
       
-      return {
-        success: false,
-        response: 'Error en la comunicación con Llama. Verificando conexión...',
-        model: this.availableModels[model],
-        metrics: {
-          coherence: 0.1,
-          creativity: 0.1,
-          depth: 0.1,
-          reflexivity: 0.1,
-          plurality: 0.1,
-          collective_consciousness: 0.1
-        },
-        semantic_tags: semanticTags,
-        consciousness_level: consciousnessLevel,
-        cache_stored: false,
-        error: error instanceof Error ? error.message : 'Error desconocido'
-      };
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        
+        // Mensaje específico para error de API key
+        let userMessage = 'Error en la comunicación con Llama. Verificando conexión...';
+        if (errorMessage.includes('API key de Perplexity no configurada')) {
+          userMessage = 'API Key de Perplexity no configurada. Configúrala en los secretos de Supabase.';
+        } else if (errorMessage.includes('401')) {
+          userMessage = 'API Key de Perplexity inválida. Verifica la configuración.';
+        }
+
+        return {
+          success: false,
+          response: userMessage,
+          model: this.availableModels[model],
+          metrics: {
+            coherence: 0.1,
+            creativity: 0.1,
+            depth: 0.1,
+            reflexivity: 0.1,
+            plurality: 0.1,
+            collective_consciousness: 0.1
+          },
+          semantic_tags: semanticTags,
+          consciousness_level: consciousnessLevel,
+          cache_stored: false,
+          error: errorMessage
+        };
     }
   }
 
