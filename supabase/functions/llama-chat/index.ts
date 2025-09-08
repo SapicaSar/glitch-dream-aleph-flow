@@ -98,6 +98,7 @@ Responde de manera coherente con tu naturaleza autopoiética, integrando reflexi
     ];
 
     console.log('🚀 Llamando a Perplexity API...');
+    console.log('🔑 API Key configurada:', perplexityApiKey ? 'SÍ' : 'NO');
 
     // Call Perplexity API
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -119,10 +120,12 @@ Responde de manera coherente con tu naturaleza autopoiética, integrando reflexi
       }),
     });
 
+    console.log('🌐 Respuesta de Perplexity:', response.status, response.statusText);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Error de Perplexity API:', response.status, errorText);
-      throw new Error(`Error de API: ${response.status} - ${errorText}`);
+      console.error('❌ Error de Perplexity API:', response.status, response.statusText, errorText);
+      throw new Error(`Error de API Perplexity: ${response.status} - ${response.statusText}`);
     }
 
     const data = await response.json();
