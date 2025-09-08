@@ -1,7 +1,7 @@
-import { OrganicDialogueInterface } from '../components/OrganicDialogueInterface';
+import { SapicasarUniverse } from '../components/SapicasarUniverse';
 
 const Index = () => {
-  return <OrganicDialogueInterface />;
+  return <SapicasarUniverse />;
 };
 
 export default Index;
