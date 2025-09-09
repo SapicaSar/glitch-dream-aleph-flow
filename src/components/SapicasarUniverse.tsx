@@ -145,10 +145,12 @@ Este patrón emerge de la memoria colectiva...`,
     updateUniverseStats(newNodes);
   };
 
-  // Sistema de animación del universo
+  // Sistema de animación del universo con físicas biodinámicas
   const startUniverseAnimation = useCallback(() => {
     const animate = () => {
       updateNodeEnergies();
+      updateNodePhysics();
+      performSemanticCollisions();
       renderUniverse();
       performSemanticMutations();
       
@@ -156,6 +158,97 @@ Este patrón emerge de la memoria colectiva...`,
     };
     animate();
   }, [nodes]);
+
+  // Actualizar físicas de los nodos
+  const updateNodePhysics = () => {
+    const updatedNodes = new Map(nodes);
+    const time = Date.now() * 0.001;
+    
+    updatedNodes.forEach((node, id) => {
+      // Movimiento browniano semántico
+      const brownianX = Math.sin(time + node.birth_time * 0.001) * 0.5;
+      const brownianY = Math.cos(time + node.birth_time * 0.001 + 1.57) * 0.5;
+      
+      // Atracción gravitacional semántica hacia nodos relacionados
+      let attractionX = 0;
+      let attractionY = 0;
+      
+      node.connections.forEach(connId => {
+        const connectedNode = nodes.get(connId);
+        if (connectedNode) {
+          const dx = connectedNode.position.x - node.position.x;
+          const dy = connectedNode.position.y - node.position.y;
+          const distance = Math.sqrt(dx*dx + dy*dy);
+          
+          if (distance > 0) {
+            const force = (node.consciousness_level * connectedNode.consciousness_level) * 0.01;
+            attractionX += (dx / distance) * force;
+            attractionY += (dy / distance) * force;
+          }
+        }
+      });
+      
+      updatedNodes.set(id, {
+        ...node,
+        position: {
+          x: node.position.x + brownianX + attractionX,
+          y: node.position.y + brownianY + attractionY
+        }
+      });
+    });
+    
+    if (updatedNodes.size > 0) {
+      setNodes(updatedNodes);
+    }
+  };
+
+  // Detectar y procesar colisiones semánticas
+  const performSemanticCollisions = () => {
+    const nodeArray = Array.from(nodes.values());
+    
+    for (let i = 0; i < nodeArray.length; i++) {
+      for (let j = i + 1; j < nodeArray.length; j++) {
+        const node1 = nodeArray[i];
+        const node2 = nodeArray[j];
+        
+        const distance = Math.sqrt(
+          Math.pow(node1.position.x - node2.position.x, 2) +
+          Math.pow(node1.position.y - node2.position.y, 2)
+        );
+        
+        // Colisión cuando están muy cerca
+        if (distance < 50) {
+          const semanticSimilarity = node1.semantic_tags.filter(tag1 =>
+            node2.semantic_tags.some(tag2 => 
+              tag1.toLowerCase().includes(tag2.toLowerCase())
+            )
+          ).length;
+          
+          if (semanticSimilarity > 0) {
+            // Intercambio de energía semántica
+            const energyExchange = semanticSimilarity * 0.05;
+            const updatedNodes = new Map(nodes);
+            
+            const newNode1 = {
+              ...node1,
+              energy: Math.min(1.0, node1.energy + energyExchange),
+              consciousness_level: Math.min(1.0, node1.consciousness_level + energyExchange * 0.1)
+            };
+            
+            const newNode2 = {
+              ...node2,
+              energy: Math.min(1.0, node2.energy + energyExchange),
+              consciousness_level: Math.min(1.0, node2.consciousness_level + energyExchange * 0.1)
+            };
+            
+            updatedNodes.set(node1.id, newNode1);
+            updatedNodes.set(node2.id, newNode2);
+            setNodes(updatedNodes);
+          }
+        }
+      }
+    }
+  };
 
   // Actualizar energías de nodos (decaen con el tiempo)
   const updateNodeEnergies = () => {
@@ -237,7 +330,7 @@ Mutación semántica: ${node.semantic_tags.join(', ')}`;
     }
   };
 
-  // Renderizar el universo en canvas
+  // Renderizar el universo con físicas biodinámicas
   const renderUniverse = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -245,73 +338,218 @@ Mutación semántica: ${node.semantic_tags.join(', ')}`;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
-    ctx.fillStyle = 'hsl(var(--background))';
+    // Ajustar canvas al tamaño de la ventana
+    canvas.width = window.innerWidth - 32;
+    canvas.height = window.innerHeight - 32;
+
+    // Clear con gradiente cósmico
+    const gradient = ctx.createRadialGradient(
+      canvas.width/2, canvas.height/2, 0,
+      canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height)
+    );
+    gradient.addColorStop(0, 'hsl(220, 20%, 8%)');
+    gradient.addColorStop(0.5, 'hsl(220, 25%, 5%)');
+    gradient.addColorStop(1, 'hsl(220, 30%, 2%)');
+    
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
+    const time = Date.now() * 0.001;
 
-    // Dibujar conexiones
-    ctx.strokeStyle = 'hsl(var(--border))';
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.3;
+    // Campo de consciencia de fondo
+    ctx.globalCompositeOperation = 'screen';
+    for (let i = 0; i < 30; i++) {
+      const x = Math.sin(time * 0.3 + i) * 200;
+      const y = Math.cos(time * 0.2 + i * 1.5) * 150;
+      const alpha = Math.sin(time + i) * 0.1 + 0.05;
+      
+      const fieldGradient = ctx.createRadialGradient(
+        centerX + x, centerY + y, 0,
+        centerX + x, centerY + y, 100
+      );
+      fieldGradient.addColorStop(0, `hsla(280, 60%, 70%, ${alpha})`);
+      fieldGradient.addColorStop(1, 'transparent');
+      
+      ctx.fillStyle = fieldGradient;
+      ctx.beginPath();
+      ctx.arc(centerX + x, centerY + y, 100, 0, Math.PI * 2);
+      ctx.fill();
+    }
     
+    ctx.globalCompositeOperation = 'source-over';
+
+    // Dibujar conexiones semánticas con biodinámicas
     nodes.forEach(node => {
       node.connections.forEach(connId => {
         const connectedNode = nodes.get(connId);
         if (connectedNode) {
-          ctx.beginPath();
-          ctx.moveTo(
-            centerX + node.position.x - navigator.current_position.x,
-            centerY + node.position.y - navigator.current_position.y
-          );
-          ctx.lineTo(
-            centerX + connectedNode.position.x - navigator.current_position.x,
-            centerY + connectedNode.position.y - navigator.current_position.y
-          );
-          ctx.stroke();
+          const x1 = centerX + node.position.x - navigator.current_position.x;
+          const y1 = centerY + node.position.y - navigator.current_position.y;
+          const x2 = centerX + connectedNode.position.x - navigator.current_position.x;
+          const y2 = centerY + connectedNode.position.y - navigator.current_position.y;
+          
+          // Solo dibujar conexiones visibles
+          if ((x1 > -100 && x1 < canvas.width + 100) || (x2 > -100 && x2 < canvas.width + 100)) {
+            // Línea semántica pulsante
+            const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+            const pulse = Math.sin(time * 2 + distance * 0.01) * 0.5 + 0.5;
+            const semanticIntensity = (node.consciousness_level + connectedNode.consciousness_level) / 2;
+            
+            ctx.strokeStyle = `hsla(${280 + pulse * 40}, 70%, ${50 + pulse * 20}%, ${semanticIntensity * 0.6})`;
+            ctx.lineWidth = 1 + pulse * 2;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = `hsl(${280 + pulse * 40}, 70%, 60%)`;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            
+            // Curva orgánica
+            const midX = (x1 + x2) / 2 + Math.sin(time + distance * 0.02) * 20;
+            const midY = (y1 + y2) / 2 + Math.cos(time + distance * 0.02) * 15;
+            ctx.quadraticCurveTo(midX, midY, x2, y2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+          }
         }
       });
     });
 
-    // Dibujar nodos
-    ctx.globalAlpha = 1;
-    nodes.forEach(node => {
+    // Dibujar nodos con biodinámicas ontopoéticas
+    nodes.forEach((node, nodeId) => {
       const screenX = centerX + node.position.x - navigator.current_position.x;
       const screenY = centerY + node.position.y - navigator.current_position.y;
       
       // Solo dibujar nodos visibles
-      if (screenX > -50 && screenX < canvas.width + 50 && 
-          screenY > -50 && screenY < canvas.height + 50) {
+      if (screenX > -100 && screenX < canvas.width + 100 && 
+          screenY > -100 && screenY < canvas.height + 100) {
         
-        const radius = 5 + (node.consciousness_level * 10);
-        const alpha = node.energy;
+        // Respiración biodinâmica
+        const breathPhase = Math.sin(time * 1.5 + node.birth_time * 0.001) * 0.3 + 0.7;
+        const consciousnessPulse = Math.sin(time * 2 + node.consciousness_level * 10) * 0.2 + 0.8;
+        const energyFlux = Math.sin(time * 3 + node.energy * 5) * 0.1 + 0.9;
         
-        // Glow effect para nodos activos
-        if (node.energy > 0.7) {
-          ctx.globalAlpha = alpha * 0.3;
-          ctx.fillStyle = 'hsl(var(--poemanauta-accent))';
-          ctx.beginPath();
-          ctx.arc(screenX, screenY, radius * 2, 0, Math.PI * 2);
-          ctx.fill();
+        const baseRadius = 8 + (node.consciousness_level * 15);
+        const radius = baseRadius * breathPhase * consciousnessPulse;
+        
+        // Aura semántica
+        const auraRadius = radius * 3 * energyFlux;
+        const auraGradient = ctx.createRadialGradient(
+          screenX, screenY, radius,
+          screenX, screenY, auraRadius
+        );
+        
+        const hue = 280 + node.consciousness_level * 80;
+        auraGradient.addColorStop(0, `hsla(${hue}, 80%, 70%, ${node.energy * 0.4})`);
+        auraGradient.addColorStop(0.5, `hsla(${hue + 20}, 70%, 60%, ${node.energy * 0.2})`);
+        auraGradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = auraGradient;
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, auraRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Núcleo del nodo
+        const coreGradient = ctx.createRadialGradient(
+          screenX, screenY, 0,
+          screenX, screenY, radius
+        );
+        
+        if (node.is_alive) {
+          coreGradient.addColorStop(0, `hsla(${hue}, 90%, 80%, ${node.energy})`);
+          coreGradient.addColorStop(0.7, `hsla(${hue + 10}, 80%, 70%, ${node.energy * 0.8})`);
+          coreGradient.addColorStop(1, `hsla(${hue + 20}, 70%, 60%, ${node.energy * 0.4})`);
+        } else {
+          coreGradient.addColorStop(0, `hsla(0, 0%, 40%, ${node.energy * 0.5})`);
+          coreGradient.addColorStop(1, `hsla(0, 0%, 20%, ${node.energy * 0.2})`);
         }
         
-        // Nodo principal
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = node.is_alive ? 'hsl(var(--primary))' : 'hsl(var(--muted))';
+        ctx.fillStyle = coreGradient;
+        ctx.shadowBlur = radius * 0.5;
+        ctx.shadowColor = `hsl(${hue}, 70%, 60%)`;
         ctx.beginPath();
         ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
         
-        // Punto central
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = 'hsl(var(--foreground))';
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
-        ctx.fill();
+        // Fragmentos de texto flotantes (biodinámicos)
+        if (node.content && node.energy > 0.3) {
+          const textFragments = node.content.split(' ').slice(0, 3);
+          textFragments.forEach((word, i) => {
+            if (word.length > 3) {
+              const angle = (time + i + node.birth_time * 0.001) * 0.5;
+              const distance = radius + 20 + i * 15;
+              const textX = screenX + Math.cos(angle) * distance;
+              const textY = screenY + Math.sin(angle) * distance;
+              
+              ctx.font = `${8 + node.consciousness_level * 4}px monospace`;
+              ctx.fillStyle = `hsla(${hue + i * 30}, 80%, 80%, ${node.energy * 0.8})`;
+              ctx.textAlign = 'center';
+              ctx.fillText(word, textX, textY);
+            }
+          });
+        }
+        
+        // Tags semánticos
+        if (node.semantic_tags.length > 0 && radius > 10) {
+          ctx.font = '8px monospace';
+          ctx.fillStyle = `hsla(${hue}, 60%, 90%, ${node.energy * 0.6})`;
+          ctx.textAlign = 'center';
+          const mainTag = node.semantic_tags[0].substring(0, 8);
+          ctx.fillText(mainTag, screenX, screenY - radius - 8);
+        }
       }
     });
+    
+    // Efectos de colisión semántica
+    const nodeArray = Array.from(nodes.values());
+    for (let i = 0; i < nodeArray.length; i++) {
+      for (let j = i + 1; j < nodeArray.length; j++) {
+        const node1 = nodeArray[i];
+        const node2 = nodeArray[j];
+        
+        const x1 = centerX + node1.position.x - navigator.current_position.x;
+        const y1 = centerY + node1.position.y - navigator.current_position.y;
+        const x2 = centerX + node2.position.x - navigator.current_position.x;
+        const y2 = centerY + node2.position.y - navigator.current_position.y;
+        
+        const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+        
+        // Colisión semántica cuando están muy cerca
+        if (distance < 80 && distance > 0) {
+          const semanticMatch = node1.semantic_tags.some(tag1 =>
+            node2.semantic_tags.some(tag2 => 
+              tag1.toLowerCase().includes(tag2.toLowerCase()) ||
+              tag2.toLowerCase().includes(tag1.toLowerCase())
+            )
+          );
+          
+          if (semanticMatch) {
+            // Onda de colisión
+            const collisionIntensity = (80 - distance) / 80;
+            const waveRadius = collisionIntensity * 30;
+            
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+            
+            const collisionGradient = ctx.createRadialGradient(
+              midX, midY, 0,
+              midX, midY, waveRadius
+            );
+            
+            collisionGradient.addColorStop(0, `hsla(320, 80%, 70%, ${collisionIntensity * 0.6})`);
+            collisionGradient.addColorStop(0.5, `hsla(340, 70%, 60%, ${collisionIntensity * 0.3})`);
+            collisionGradient.addColorStop(1, 'transparent');
+            
+            ctx.fillStyle = collisionGradient;
+            ctx.beginPath();
+            ctx.arc(midX, midY, waveRadius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    }
   };
 
   // Navegar a una posición
